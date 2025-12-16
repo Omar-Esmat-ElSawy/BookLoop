@@ -4,7 +4,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { Book } from 'lucide-react';
+import { Book, Eye, EyeOff } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {
@@ -29,6 +29,7 @@ type FormData = z.infer<typeof formSchema>;
 const LoginPage = () => {
   const { signIn, user } = useAuth();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
   
   useEffect(() => {
@@ -112,13 +113,22 @@ const LoginPage = () => {
                     </Link>
                   </div>
                   <FormControl>
-                    <Input 
-                      type="password" 
-                      placeholder="Enter your password" 
-                      {...field} 
-                      disabled={isSubmitting}
-                      className="dark:bg-transparent dark:text-dark-field dark:border-dark-field"
-                    />
+                    <div className="relative">
+                      <Input 
+                        type={showPassword ? "text" : "password"} 
+                        placeholder="Enter your password" 
+                        {...field} 
+                        disabled={isSubmitting}
+                        className="dark:bg-transparent dark:text-dark-field dark:border-dark-field pr-10"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowPassword(!showPassword)}
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                      >
+                        {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                      </button>
+                    </div>
                   </FormControl>
                   <FormMessage className="dark:text-dark-button" />
                 </FormItem>
