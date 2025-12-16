@@ -35,6 +35,7 @@ export interface ExchangeRequest {
   requester_id: string;
   status: 'pending' | 'accepted' | 'rejected';
   message?: string;
+  offered_book_id?: string;
 }
 
 export interface Message {

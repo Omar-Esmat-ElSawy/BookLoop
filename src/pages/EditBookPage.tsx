@@ -3,6 +3,8 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams, Link } from 'react-router-dom';
 import { ArrowLeft, Trash } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Switch } from '@/components/ui/switch';
+import { Label } from '@/components/ui/label';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -25,11 +27,12 @@ const EditBookPage = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { user } = useAuth();
-  const { genres, fetchBookById, updateBook, deleteBook } = useBooks();
+  const { genres, fetchBookById, updateBook, deleteBook, toggleBookAvailability } = useBooks();
   const [book, setBook] = useState<Book | null>(null);
   const [loading, setLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [isTogglingAvailability, setIsTogglingAvailability] = useState(false);
 
   useEffect(() => {
     const loadBook = async () => {
@@ -103,6 +106,20 @@ const EditBookPage = () => {
     }
   };
 
+  const handleToggleAvailability = async (isAvailable: boolean) => {
+    if (!id || !book) return;
+    
+    setIsTogglingAvailability(true);
+    try {
+      const success = await toggleBookAvailability(id, isAvailable);
+      if (success) {
+        setBook({ ...book, is_available: isAvailable });
+      }
+    } finally {
+      setIsTogglingAvailability(false);
+    }
+  };
+
   // Redirect to login if not authenticated
   if (!user) {
     navigate('/login');
@@ -149,7 +166,7 @@ const EditBookPage = () => {
           Back to Book Details
         </Link>
 
-        <div className="flex justify-between items-center mb-8">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
           <div>
             <h1 className="text-3xl font-bold">Edit Book</h1>
             <p className="text-muted-foreground">
@@ -157,33 +174,47 @@ const EditBookPage = () => {
             </p>
           </div>
           
-          <AlertDialog>
-            <AlertDialogTrigger asChild>
-              <Button variant="destructive" className="gap-1">
-                <Trash className="h-4 w-4" />
-                Delete Book
-              </Button>
-            </AlertDialogTrigger>
-            <AlertDialogContent>
-              <AlertDialogHeader>
-                <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-                <AlertDialogDescription>
-                  This action cannot be undone. This will permanently delete your book 
-                  and remove it from our servers.
-                </AlertDialogDescription>
-              </AlertDialogHeader>
-              <AlertDialogFooter>
-                <AlertDialogCancel>Cancel</AlertDialogCancel>
-                <AlertDialogAction 
-                  onClick={handleDeleteBook}
-                  className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                  disabled={isDeleting}
-                >
-                  {isDeleting ? 'Deleting...' : 'Delete'}
-                </AlertDialogAction>
-              </AlertDialogFooter>
-            </AlertDialogContent>
-          </AlertDialog>
+          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
+            <div className="flex items-center gap-3 p-3 rounded-lg border bg-card">
+              <Label htmlFor="availability" className="text-sm font-medium">
+                {book.is_available ? 'Available for exchange' : 'Not available'}
+              </Label>
+              <Switch
+                id="availability"
+                checked={book.is_available ?? true}
+                onCheckedChange={handleToggleAvailability}
+                disabled={isTogglingAvailability}
+              />
+            </div>
+            
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button variant="destructive" className="gap-1">
+                  <Trash className="h-4 w-4" />
+                  Delete Book
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    This action cannot be undone. This will permanently delete your book 
+                    and remove it from our servers.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                  <AlertDialogAction 
+                    onClick={handleDeleteBook}
+                    className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                    disabled={isDeleting}
+                  >
+                    {isDeleting ? 'Deleting...' : 'Delete'}
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+          </div>
         </div>
 
         <BookForm 

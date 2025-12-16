@@ -323,10 +323,15 @@ const ProfilePage = () => {
               )}
             </div>
             
-              <BookGrid 
-                books={userBooks} 
-                emptyMessage={`${isOwnProfile ? 'You haven\'t' : 'This user hasn\'t'} added any books yet`} 
-              />
+              {userBooks.length > 0 ? (
+                <BookGrid books={userBooks} />
+              ) : (
+                <div className="flex items-center justify-center h-64">
+                  <p className="text-muted-foreground">
+                    {isOwnProfile ? "You haven't" : "This user hasn't"} added any books yet
+                  </p>
+                </div>
+              )}
             </div>
           </div>
         </div>

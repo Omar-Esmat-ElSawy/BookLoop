@@ -15,6 +15,7 @@ import BookDetailsPage from "./pages/BookDetailsPage";
 import AddBookPage from "./pages/AddBookPage";
 import EditBookPage from "./pages/EditBookPage";
 import MyBooksPage from "./pages/MyBooksPage";
+import ExchangeRequestsPage from "./pages/ExchangeRequestsPage";
 import ProfilePage from "./pages/ProfilePage";
 import MessagesPage from "./pages/MessagesPage";
 import LoginPage from "./pages/LoginPage";
@@ -64,6 +65,7 @@ const App = () => (
                     <Route path="/books/add" element={<AddBookPage />} />
                     <Route path="/books/edit/:id" element={<EditBookPage />} />
                     <Route path="/my-books" element={<MyBooksPage />} />
+                    <Route path="/exchange-requests" element={<ExchangeRequestsPage />} />
                     <Route path="/profile/:id" element={<ProfilePage />} />
                     <Route path="/messages" element={<MessagesPage />} />
                     <Route path="/messages/:id" element={<MessagesPage />} />

@@ -47,7 +47,7 @@ const NavBar = ({ }: NavBarProps) => {
   
   return (
     <header className="sticky top-0 z-40 w-full border-b border-border/20 bg-background/70 backdrop-blur-xl backdrop-saturate-150 shadow-sm dark:shadow-primary/5">
-      <div className="container mx-auto flex h-16 items-center justify-between px-4">
+      <div className="container mx-auto flex h-20 md:h-16 items-center justify-between px-4">
         <div className="flex items-center gap-2">
           <Link to="/" className="flex items-center gap-2">
             <img src={logo} alt="Book Loop" className="h-8 w-8" />
@@ -79,16 +79,28 @@ const NavBar = ({ }: NavBarProps) => {
               Books
             </Link>
             {user && (
-              <Link 
-                to="/messages" 
-                className={`px-4 py-2 text-sm font-medium rounded-md transition-all ${
-                  location.pathname === '/messages' 
-                    ? 'bg-primary text-primary-foreground shadow-md' 
-                    : 'hover:bg-primary/10 hover:text-primary dark:hover:bg-primary/20 dark:hover:text-dark-button'
-                }`}
-              >
-                Messages
-              </Link>
+              <>
+                <Link 
+                  to="/messages" 
+                  className={`px-4 py-2 text-sm font-medium rounded-md transition-all ${
+                    location.pathname === '/messages' 
+                      ? 'bg-primary text-primary-foreground shadow-md' 
+                      : 'hover:bg-primary/10 hover:text-primary dark:hover:bg-primary/20 dark:hover:text-dark-button'
+                  }`}
+                >
+                  Messages
+                </Link>
+                <Link 
+                  to="/exchange-requests" 
+                  className={`px-4 py-2 text-sm font-medium rounded-md transition-all ${
+                    location.pathname === '/exchange-requests' 
+                      ? 'bg-primary text-primary-foreground shadow-md' 
+                      : 'hover:bg-primary/10 hover:text-primary dark:hover:bg-primary/20 dark:hover:text-dark-button'
+                  }`}
+                >
+                  Exchanges
+                </Link>
+              </>
             )}
           </nav>
         </div>

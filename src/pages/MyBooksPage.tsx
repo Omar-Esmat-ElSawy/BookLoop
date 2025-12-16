@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Plus, Lock } from 'lucide-react';
+import { Plus, Lock, ArrowRightLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   Tabs,
@@ -95,31 +95,44 @@ const MyBooksPage = () => {
       <main className="container mx-auto px-4 py-6 md:py-8 flex-grow">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6 md:mb-8">
           <h1 className="text-2xl md:text-3xl font-bold">My Books</h1>
-          {subscribed ? (
-            <Link to="/books/add">
-              <Button className="gap-1 w-full md:w-auto">
-                <Plus className="h-4 w-4" />
-                Add Book
+          <div className="flex gap-2 w-full md:w-auto">
+            <Link to="/exchange-requests" className="flex-1 md:flex-none">
+              <Button variant="outline" className="gap-1 w-full">
+                <ArrowRightLeft className="h-4 w-4" />
+                Exchange Requests
+                {(incomingRequests.filter(r => r.status === 'pending').length > 0) && (
+                  <span className="ml-1 bg-primary text-primary-foreground rounded-full px-2 py-0.5 text-xs">
+                    {incomingRequests.filter(r => r.status === 'pending').length}
+                  </span>
+                )}
               </Button>
             </Link>
-          ) : (
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button 
-                    className="gap-1 w-full md:w-auto" 
-                    onClick={createCheckoutSession}
-                  >
-                    <Lock className="h-4 w-4" />
-                    Add Book
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p>Subscribe to add books</p>
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
-          )}
+            {subscribed ? (
+              <Link to="/books/add" className="flex-1 md:flex-none">
+                <Button className="gap-1 w-full">
+                  <Plus className="h-4 w-4" />
+                  Add Book
+                </Button>
+              </Link>
+            ) : (
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button 
+                      className="gap-1 flex-1 md:flex-none" 
+                      onClick={createCheckoutSession}
+                    >
+                      <Lock className="h-4 w-4" />
+                      Add Book
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>Subscribe to add books</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            )}
+          </div>
         </div>
 
         <Tabs defaultValue="my-books" className="w-full">
@@ -149,10 +162,13 @@ const MyBooksPage = () => {
                 <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-primary"></div>
               </div>
             ) : (
-              <BookGrid 
-                books={userBooks} 
-                emptyMessage="You haven't added any books yet" 
-              />
+              userBooks.length > 0 ? (
+                <BookGrid books={userBooks} />
+              ) : (
+                <div className="flex items-center justify-center h-64">
+                  <p className="text-muted-foreground">You haven't added any books yet</p>
+                </div>
+              )
             )}
           </TabsContent>
           

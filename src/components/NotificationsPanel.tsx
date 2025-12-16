@@ -30,8 +30,8 @@ const NotificationsPanel = ({ onClose }: NotificationsPanelProps) => {
     
     // Navigate based on notification type
     if (relatedId) {
-      if (type?.includes('exchange')) {
-        navigate(`/books/${relatedId}`);
+      if (type === 'exchange_request' || type === 'exchange_response') {
+        navigate('/exchange-requests');
       } else if (type?.includes('message')) {
         navigate(`/messages`);
       } else {

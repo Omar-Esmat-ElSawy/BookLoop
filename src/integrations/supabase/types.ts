@@ -92,6 +92,7 @@ export type Database = {
           created_at: string | null
           id: string
           message: string | null
+          offered_book_id: string | null
           requester_id: string
           status: string
         }
@@ -100,6 +101,7 @@ export type Database = {
           created_at?: string | null
           id?: string
           message?: string | null
+          offered_book_id?: string | null
           requester_id: string
           status: string
         }
@@ -108,6 +110,7 @@ export type Database = {
           created_at?: string | null
           id?: string
           message?: string | null
+          offered_book_id?: string | null
           requester_id?: string
           status?: string
         }
@@ -115,6 +118,13 @@ export type Database = {
           {
             foreignKeyName: "exchange_requests_book_id_fkey"
             columns: ["book_id"]
+            isOneToOne: false
+            referencedRelation: "books"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "exchange_requests_offered_book_id_fkey"
+            columns: ["offered_book_id"]
             isOneToOne: false
             referencedRelation: "books"
             referencedColumns: ["id"]
@@ -324,9 +334,21 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      accept_exchange_and_mark_books_unavailable: {
+        Args: {
+          p_book_id: string
+          p_offered_book_id: string
+          p_request_id: string
+        }
+        Returns: undefined
+      }
       calculate_distance: {
         Args: { lat1: number; lat2: number; lon1: number; lon2: number }
         Returns: number
+      }
+      cancel_exchange_and_mark_books_available: {
+        Args: { p_book_id: string; p_offered_book_id: string }
+        Returns: undefined
       }
       has_role: {
         Args: {

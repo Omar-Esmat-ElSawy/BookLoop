@@ -18,9 +18,12 @@ interface BooksContextProps {
   fetchBooksByGenre: (genre: string) => Promise<Book[]>;
   searchBooks: (query: string, genreFilter?: string, searchType?: 'title' | 'author' | 'genre' | 'owner' | 'combined') => Promise<Book[]>;
   fetchBookById: (id: string) => Promise<Book | null>;
-  requestBookExchange: (bookId: string, message: string) => Promise<boolean>;
+  requestBookExchange: (bookId: string, message: string, offeredBookId?: string) => Promise<boolean>;
   respondToExchangeRequest: (requestId: string, accept: boolean) => Promise<boolean>;
+  cancelExchangeRequest: (requestId: string) => Promise<boolean>;
+  markExchangeAsDone: (requestId: string) => Promise<boolean>;
   fetchUserRequestHistory: () => Promise<Book[]>;
+  toggleBookAvailability: (bookId: string, isAvailable: boolean) => Promise<boolean>;
 }
 
 const BooksContext = createContext<BooksContextProps | undefined>(undefined);
@@ -148,7 +151,7 @@ export const BooksProvider = ({ children }: { children: ReactNode }) => {
     try {
       setLoading(true);
       
-      // Fetch all books
+      // Fetch all available books (excluding unavailable ones from other users)
       const { data, error } = await supabase
         .from('books')
         .select('*')
@@ -156,22 +159,28 @@ export const BooksProvider = ({ children }: { children: ReactNode }) => {
       
       if (error) throw error;
       
-      setBooks(data);
+      // Filter to only show available books for display (except user's own books)
+      const availableBooks = data.filter(book => 
+        book.is_available === true || (user && book.owner_id === user.id)
+      );
       
-      // Set recently added books
-      setRecentlyAdded(data.slice(0, 10));
+      setBooks(availableBooks);
       
-      // Set user books if logged in
+      // Set recently added books (only available ones from other users)
+      const recentAvailable = data.filter(book => book.is_available === true);
+      setRecentlyAdded(recentAvailable.slice(0, 10));
+      
+      // Set user books if logged in (include all user's books regardless of availability)
       if (user) {
         const userBooks = data.filter(book => book.owner_id === user.id);
         setUserBooks(userBooks);
       }
       
-      // Initialize books by genre
+      // Initialize books by genre (only available books)
       const byGenre: Record<string, Book[]> = {};
       
-      // Group books by genre
-      data.forEach(book => {
+      // Group available books by genre
+      recentAvailable.forEach(book => {
         if (book.genre) {
           if (!byGenre[book.genre]) {
             byGenre[book.genre] = [];
@@ -374,6 +383,7 @@ export const BooksProvider = ({ children }: { children: ReactNode }) => {
         .from('books')
         .select('*')
         .eq('genre', genre)
+        .eq('is_available', true)
         .order('created_at', { ascending: false });
       
       if (error) throw error;
@@ -419,9 +429,11 @@ export const BooksProvider = ({ children }: { children: ReactNode }) => {
         }
       }
       
-      // Exclude user's own books from search results
+      // Exclude user's own books and unavailable books from search results
       if (user) {
-        results = results.filter(book => book.owner_id !== user.id);
+        results = results.filter(book => book.owner_id !== user.id && book.is_available !== false);
+      } else {
+        results = results.filter(book => book.is_available !== false);
       }
       
       return results;
@@ -448,7 +460,7 @@ export const BooksProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
-  const requestBookExchange = async (bookId: string, message: string): Promise<boolean> => {
+  const requestBookExchange = async (bookId: string, message: string, offeredBookId?: string): Promise<boolean> => {
     try {
       if (!user) {
         toast.error('You must be logged in to request a book exchange');
@@ -466,6 +478,20 @@ export const BooksProvider = ({ children }: { children: ReactNode }) => {
       
       const book = bookData as Book;
       
+      // Get offered book details if provided
+      let offeredBook: Book | null = null;
+      if (offeredBookId) {
+        const { data: offeredBookData, error: offeredBookError } = await supabase
+          .from('books')
+          .select('*')
+          .eq('id', offeredBookId)
+          .single();
+        
+        if (!offeredBookError && offeredBookData) {
+          offeredBook = offeredBookData as Book;
+        }
+      }
+      
       // Check if user already has a pending request for this book
       const { data: existingRequests, error: checkError } = await supabase
         .from('exchange_requests')
@@ -481,19 +507,29 @@ export const BooksProvider = ({ children }: { children: ReactNode }) => {
         return false;
       }
       
-      // Create exchange request
+      // Create exchange request with offered book
       const { error } = await supabase
         .from('exchange_requests')
         .insert({
           book_id: bookId,
           requester_id: user.id,
           status: 'pending',
-          message
+          message,
+          offered_book_id: offeredBookId || null
         });
       
       if (error) {
         console.error('Error creating exchange request:', error);
         throw error;
+      }
+
+      // Build message content
+      let messageContent = `Hi! I'm interested in your book "${book.title}".`;
+      if (offeredBook) {
+        messageContent += ` I'd like to offer my book "${offeredBook.title}" in exchange.`;
+      }
+      if (message) {
+        messageContent += ` Message: ${message}`;
       }
 
       // Send a direct message to the book owner about the exchange request
@@ -502,7 +538,7 @@ export const BooksProvider = ({ children }: { children: ReactNode }) => {
         .insert({
           sender_id: user.id,
           receiver_id: book.owner_id,
-          content: `Hi! I'm interested in your book "${book.title}". I've sent a request to exchange it. Message: ${message}`,
+          content: messageContent,
           is_read: false
         });
 
@@ -521,6 +557,147 @@ export const BooksProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
+  const cancelExchangeRequest = async (requestId: string): Promise<boolean> => {
+    try {
+      if (!user) {
+        toast.error('You must be logged in to cancel exchange requests');
+        return false;
+      }
+      
+      // Get request details
+      const { data: request, error: requestError } = await supabase
+        .from('exchange_requests')
+        .select('*, book:books!exchange_requests_book_id_fkey(*)')
+        .eq('id', requestId)
+        .single();
+      
+      if (requestError) throw requestError;
+      
+      const book = request.book as Book;
+      const isOwner = book.owner_id === user.id;
+      const isRequester = request.requester_id === user.id;
+      
+      if (!isOwner && !isRequester) {
+        toast.error('You can only cancel your own exchange requests');
+        return false;
+      }
+      
+      // Update request status to cancelled
+      const { error: updateError } = await supabase
+        .from('exchange_requests')
+        .update({ status: 'cancelled' })
+        .eq('id', requestId);
+      
+      if (updateError) throw updateError;
+      
+      // If the request was accepted, make BOTH books available again using database function
+      if (request.status === 'accepted') {
+        const { error: availabilityError } = await supabase
+          .rpc('cancel_exchange_and_mark_books_available', {
+            p_book_id: book.id,
+            p_offered_book_id: request.offered_book_id
+          });
+        
+        if (availabilityError) {
+          console.error('Error updating book availability:', availabilityError);
+        }
+      }
+      
+      // Notify the other party
+      const notifyUserId = isOwner ? request.requester_id : book.owner_id;
+      const { error: notificationError } = await supabase
+        .from('notifications')
+        .insert({
+          user_id: notifyUserId,
+          type: 'exchange_cancelled',
+          content: `Exchange request for "${book.title}" has been cancelled`,
+          is_read: false,
+          related_id: book.id
+        });
+      
+      if (notificationError) console.error('Error creating notification:', notificationError);
+      
+      toast.success('Exchange request cancelled');
+      return true;
+    } catch (error: any) {
+      console.error('Error cancelling exchange request:', error);
+      toast.error(error.message || 'Error cancelling exchange request');
+      return false;
+    }
+  };
+
+  const markExchangeAsDone = async (requestId: string): Promise<boolean> => {
+    try {
+      if (!user) {
+        toast.error('You must be logged in');
+        return false;
+      }
+      
+      // Get request details
+      const { data: request, error: requestError } = await supabase
+        .from('exchange_requests')
+        .select('*, book:books!exchange_requests_book_id_fkey(*)')
+        .eq('id', requestId)
+        .single();
+      
+      if (requestError) throw requestError;
+      
+      const book = request.book as Book;
+      const isOwner = book.owner_id === user.id;
+      const isRequester = request.requester_id === user.id;
+      
+      if (!isOwner && !isRequester) {
+        toast.error('You can only complete your own exchanges');
+        return false;
+      }
+      
+      if (request.status !== 'accepted') {
+        toast.error('Only accepted exchanges can be marked as done');
+        return false;
+      }
+      
+      // Update request status to done
+      const { error: updateError } = await supabase
+        .from('exchange_requests')
+        .update({ status: 'done' })
+        .eq('id', requestId);
+      
+      if (updateError) throw updateError;
+      
+      // Mark BOTH books as unavailable (remove from system)
+      await supabase
+        .from('books')
+        .update({ is_available: false })
+        .eq('id', book.id);
+      
+      if (request.offered_book_id) {
+        await supabase
+          .from('books')
+          .update({ is_available: false })
+          .eq('id', request.offered_book_id);
+      }
+      
+      // Notify the other party
+      const notifyUserId = isOwner ? request.requester_id : book.owner_id;
+      await supabase
+        .from('notifications')
+        .insert({
+          user_id: notifyUserId,
+          type: 'exchange_done',
+          content: `Exchange for "${book.title}" has been completed!`,
+          is_read: false,
+          related_id: book.id
+        });
+      
+      toast.success('Exchange marked as done!');
+      return true;
+    } catch (error: any) {
+      console.error('Error marking exchange as done:', error);
+      toast.error(error.message || 'Error completing exchange');
+      return false;
+    }
+  };
+
   const respondToExchangeRequest = async (requestId: string, accept: boolean): Promise<boolean> => {
     try {
       if (!user) {
@@ -528,17 +705,17 @@ export const BooksProvider = ({ children }: { children: ReactNode }) => {
         return false;
       }
       
-      // Get request details
+      // Get request details - explicitly specify the foreign key to use
       const { data: request, error: requestError } = await supabase
         .from('exchange_requests')
-        .select('*, books(*)')
+        .select('*, book:books!exchange_requests_book_id_fkey(*)')
         .eq('id', requestId)
         .single();
       
       if (requestError) throw requestError;
       
       // Check if user is the book owner
-      const book = request.books as Book;
+      const book = request.book as Book;
       
       if (book.owner_id !== user.id) {
         toast.error('You can only respond to requests for your own books');
@@ -555,14 +732,19 @@ export const BooksProvider = ({ children }: { children: ReactNode }) => {
       
       if (updateError) throw updateError;
       
-      // Update book availability if accepted
+      // Update book availability if accepted - make BOTH books unavailable using database function
       if (accept) {
-        const { error: bookError } = await supabase
-          .from('books')
-          .update({ is_available: false })
-          .eq('id', book.id);
+        const { error: availabilityError } = await supabase
+          .rpc('accept_exchange_and_mark_books_unavailable', {
+            p_request_id: requestId,
+            p_book_id: book.id,
+            p_offered_book_id: request.offered_book_id
+          });
         
-        if (bookError) throw bookError;
+        if (availabilityError) {
+          console.error('Error updating book availability:', availabilityError);
+          throw availabilityError;
+        }
       }
       
       // Create notification for requester
@@ -620,6 +802,43 @@ export const BooksProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
+  const toggleBookAvailability = async (bookId: string, isAvailable: boolean): Promise<boolean> => {
+    try {
+      if (!user) {
+        toast.error('You must be logged in');
+        return false;
+      }
+      
+      // Verify user owns the book
+      const { data: book, error: checkError } = await supabase
+        .from('books')
+        .select('owner_id')
+        .eq('id', bookId)
+        .single();
+      
+      if (checkError) throw checkError;
+      
+      if (book.owner_id !== user.id) {
+        toast.error('You can only change availability of your own books');
+        return false;
+      }
+      
+      const { error } = await supabase
+        .from('books')
+        .update({ is_available: isAvailable })
+        .eq('id', bookId);
+      
+      if (error) throw error;
+      
+      toast.success(`Book marked as ${isAvailable ? 'available' : 'unavailable'}`);
+      return true;
+    } catch (error: any) {
+      console.error('Error toggling book availability:', error);
+      toast.error(error.message || 'Error updating book availability');
+      return false;
+    }
+  };
+
   const value = {
     books,
     userBooks,
@@ -635,7 +854,10 @@ export const BooksProvider = ({ children }: { children: ReactNode }) => {
     fetchBookById,
     requestBookExchange,
     respondToExchangeRequest,
-    fetchUserRequestHistory
+    cancelExchangeRequest,
+    markExchangeAsDone,
+    fetchUserRequestHistory,
+    toggleBookAvailability
   };
 
   return (

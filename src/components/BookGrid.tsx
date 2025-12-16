@@ -5,16 +5,11 @@ import BookCard from './BookCard';
 
 interface BookGridProps {
   books: Book[];
-  emptyMessage?: string;
 }
 
-const BookGrid = ({ books, emptyMessage = "No books found" }: BookGridProps) => {
+const BookGrid = ({ books }: BookGridProps) => {
   if (!books || books.length === 0) {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <p className="text-muted-foreground">{emptyMessage}</p>
-      </div>
-    );
+    return null;
   }
 
   return (

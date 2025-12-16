@@ -37,6 +37,7 @@ const BooksPage = () => {
   const [userRequestHistory, setUserRequestHistory] = useState<Book[]>([]);
   const [useLocationFilter, setUseLocationFilter] = useState(false);
   const [maxDistance, setMaxDistance] = useState<number>(50); // km
+  const [userBooks, setUserBooks] = useState<Book[]>([]);
 
   // Fetch user request history on mount
   useEffect(() => {
@@ -78,6 +79,24 @@ const BooksPage = () => {
     setIsSearching(true);
     try {
       let results = await searchBooks(query, genre, type);
+      
+      // searchBooks already excludes user's own books, so we need to find user's matching books separately
+      if (user && query.trim()) {
+        // Get user's books that match the search query from the context's books
+        const userBooksFromContext = books.filter(book => book.owner_id === user.id);
+        const queryNormalized = query.trim().toLowerCase();
+        const matchingUserBooks = userBooksFromContext.filter(book => 
+          book.title.toLowerCase().includes(queryNormalized) ||
+          book.title.includes(query.trim()) || // Direct match for non-Latin scripts like Arabic
+          book.author.toLowerCase().includes(queryNormalized) ||
+          book.author.includes(query.trim()) ||
+          (book.genre && (book.genre.toLowerCase().includes(queryNormalized) || book.genre.includes(query.trim())))
+        );
+        console.log('User books found:', userBooksFromContext.length, 'Matching:', matchingUserBooks.length, 'Query:', query);
+        setUserBooks(matchingUserBooks);
+      } else {
+        setUserBooks([]);
+      }
       
       // Apply location-based filtering if enabled
       if (useLocationFilter && user?.latitude && user?.longitude) {
@@ -365,14 +384,17 @@ const BooksPage = () => {
               />
             )}
             
-            <BookGrid 
-              books={searchResults} 
-              emptyMessage={
-                searchQuery || selectedGenre
-                  ? "No books found matching your search criteria"
-                  : "No books available yet"
-              } 
-            />
+            {searchResults.length > 0 && (
+              <BookGrid books={searchResults} />
+            )}
+            
+            {/* Your Books section - shown when searching and user has matching books */}
+            {userBooks.length > 0 && (
+              <div className="mt-8 pt-8 border-t">
+                <h2 className="text-xl font-semibold mb-4">Your Books</h2>
+                <BookGrid books={userBooks} />
+              </div>
+            )}
           </>
         )}
       </main>

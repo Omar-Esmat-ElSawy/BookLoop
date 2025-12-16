@@ -2,30 +2,21 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { format } from 'date-fns';
-import { ArrowLeft, MessageSquare, Lock } from 'lucide-react';
+import { ArrowLeft, Lock, Phone, MapPin, Star } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Textarea } from '@/components/ui/textarea';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Separator } from '@/components/ui/separator';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import NavBar from '@/components/NavBar';
+import ExchangeRequestDialog from '@/components/ExchangeRequestDialog';
 import { useBooks } from '@/contexts/BooksContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { useSubscription } from '@/hooks/useSubscription';
 import { Book, User } from '@/types/database.types';
 import { toast } from 'sonner';
 import supabase from '@/lib/supabase';
-import { sendNewMessage } from '@/services/messagingService';
+
 import { useNavigate } from 'react-router-dom';
 
 const BookDetailsPage = () => {
@@ -33,12 +24,11 @@ const BookDetailsPage = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { subscribed, loading: subLoading, createCheckoutSession } = useSubscription();
-  const { fetchBookById, requestBookExchange } = useBooks();
+  const { fetchBookById } = useBooks();
   const [book, setBook] = useState<Book | null>(null);
   const [owner, setOwner] = useState<User | null>(null);
+  const [ownerRating, setOwnerRating] = useState<{ average: number; count: number } | null>(null);
   const [loading, setLoading] = useState(true);
-  const [requestMessage, setRequestMessage] = useState('');
-  const [isRequesting, setIsRequesting] = useState(false);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
   useEffect(() => {
@@ -51,15 +41,26 @@ const BookDetailsPage = () => {
         if (bookData) {
           setBook(bookData);
           
-          // Fetch owner details (only non-sensitive fields)
+          // Fetch owner details - always fetch all fields, display based on subscription
           const { data: ownerData, error: ownerError } = await supabase
             .from('users')
-            .select('id, username, avatar_url, created_at')
+            .select('id, username, avatar_url, created_at, phone_number, location_city')
             .eq('id', bookData.owner_id)
             .maybeSingle();
           
           if (ownerError) throw ownerError;
-          setOwner(ownerData as User);
+          setOwner(ownerData as unknown as User);
+
+          // Fetch owner's ratings
+          const { data: ratingsData, error: ratingsError } = await supabase
+            .from('user_ratings')
+            .select('rating')
+            .eq('rated_user_id', bookData.owner_id);
+
+          if (!ratingsError && ratingsData && ratingsData.length > 0) {
+            const average = ratingsData.reduce((sum, r) => sum + r.rating, 0) / ratingsData.length;
+            setOwnerRating({ average, count: ratingsData.length });
+          }
         }
       } catch (error) {
         console.error('Error fetching book details:', error);
@@ -70,38 +71,8 @@ const BookDetailsPage = () => {
     };
 
     loadBook();
-  }, [id, fetchBookById]);
+  }, [id, fetchBookById, subscribed]);
 
-  const handleRequestExchange = async () => {
-    if (!book || !user) return;
-    
-    setIsRequesting(true);
-    try {
-      const success = await requestBookExchange(book.id, requestMessage);
-      if (success) {
-        setIsDialogOpen(false);
-        setRequestMessage('');
-      }
-    } finally {
-      setIsRequesting(false);
-    }
-  };
-
-  const handleMessageOwner = async () => {
-    if (!owner || !user) return;
-    
-    try {
-      const introMessage = `Hi ${owner.username}, this is ${user.username}`;
-      await sendNewMessage(introMessage, user.id, owner.id);
-      // Small delay to ensure message is processed before navigation
-      setTimeout(() => {
-        navigate(`/messages/${owner.id}`);
-      }, 500);
-    } catch (error) {
-      console.error('Error sending message:', error);
-      toast.error('Failed to send message');
-    }
-  };
 
   if (loading) {
     return (
@@ -163,54 +134,18 @@ const BookDetailsPage = () => {
                 <>
                   {subscribed ? (
                     <>
-                      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-                        <DialogTrigger asChild>
-                          <Button 
-                            className="w-full" 
-                            disabled={!book.is_available}
-                          >
-                            Request Exchange
-                          </Button>
-                        </DialogTrigger>
-                        <DialogContent>
-                          <DialogHeader>
-                            <DialogTitle>Request Book Exchange</DialogTitle>
-                            <DialogDescription>
-                              Send a message to the book owner to request an exchange.
-                            </DialogDescription>
-                          </DialogHeader>
-                          <div className="space-y-4 py-4">
-                            <p className="text-sm">
-                              <span className="font-medium">Book:</span> {book.title}
-                            </p>
-                            <Textarea
-                              placeholder="Write a message to the book owner..."
-                              value={requestMessage}
-                              onChange={(e) => setRequestMessage(e.target.value)}
-                            />
-                          </div>
-                          <DialogFooter>
-                            <Button 
-                              type="submit" 
-                              onClick={handleRequestExchange}
-                              disabled={isRequesting || !requestMessage.trim()}
-                            >
-                              {isRequesting ? 'Sending...' : 'Send Request'}
-                            </Button>
-                          </DialogFooter>
-                        </DialogContent>
-                      </Dialog>
-                      
-                      {owner && (
-                        <Button 
-                          variant="outline" 
-                          className="w-full gap-2"
-                          onClick={handleMessageOwner}
-                        >
-                          <MessageSquare className="h-4 w-4" />
-                          Message Owner
-                        </Button>
-                      )}
+                      <Button 
+                        className="w-full" 
+                        disabled={!book.is_available}
+                        onClick={() => setIsDialogOpen(true)}
+                      >
+                        Request Exchange
+                      </Button>
+                      <ExchangeRequestDialog 
+                        book={book}
+                        open={isDialogOpen}
+                        onOpenChange={setIsDialogOpen}
+                      />
                     </>
                   ) : (
                     <Card className="border-2 border-muted">
@@ -283,21 +218,59 @@ const BookDetailsPage = () => {
               <div>
                 <h2 className="text-xl font-semibold mb-4">Book Owner</h2>
                 {subscribed ? (
-                  <Link 
-                    to={`/profile/${owner.id}`}
-                    className="flex items-center gap-4 p-4 rounded-lg border hover:bg-secondary/50 transition-colors"
-                  >
-                    <Avatar className="h-12 w-12">
-                      <AvatarImage src={owner.avatar_url || ''} alt={owner.username} />
-                      <AvatarFallback>{owner.username?.[0]?.toUpperCase() || 'U'}</AvatarFallback>
-                    </Avatar>
-                    <div>
-                      <p className="font-medium">{owner.username}</p>
-                      <p className="text-sm text-muted-foreground">
-                        View profile
-                      </p>
+                  <div className="space-y-4">
+                    <Link 
+                      to={`/profile/${owner.id}`}
+                      className="flex items-center gap-4 p-4 rounded-lg border hover:bg-secondary/50 transition-colors"
+                    >
+                      <Avatar className="h-12 w-12">
+                        <AvatarImage src={owner.avatar_url || ''} alt={owner.username} />
+                        <AvatarFallback>{owner.username?.[0]?.toUpperCase() || 'U'}</AvatarFallback>
+                      </Avatar>
+                      <div className="flex-1">
+                        <p className="font-medium">{owner.username}</p>
+                        <p className="text-sm text-muted-foreground">
+                          View profile
+                        </p>
+                      </div>
+                    </Link>
+
+                    {/* Owner Details */}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 p-4 rounded-lg border bg-muted/30">
+                      {/* Rating */}
+                      <div className="flex items-center gap-2">
+                        <Star className="h-4 w-4 text-yellow-500 fill-yellow-500" />
+                        <span className="text-sm font-medium">Rating:</span>
+                        {ownerRating ? (
+                          <span className="text-sm">
+                            {ownerRating.average.toFixed(1)} ({ownerRating.count} {ownerRating.count === 1 ? 'review' : 'reviews'})
+                          </span>
+                        ) : (
+                          <span className="text-sm text-muted-foreground">No ratings yet</span>
+                        )}
+                      </div>
+
+                      {/* Phone Number */}
+                      {owner.phone_number && (
+                        <div className="flex items-center gap-2">
+                          <Phone className="h-4 w-4 text-muted-foreground" />
+                          <span className="text-sm font-medium">Phone:</span>
+                          <a href={`tel:${owner.phone_number}`} className="text-sm text-primary hover:underline">
+                            {owner.phone_number}
+                          </a>
+                        </div>
+                      )}
+
+                      {/* Location */}
+                      {owner.location_city && (
+                        <div className="flex items-center gap-2">
+                          <MapPin className="h-4 w-4 text-muted-foreground" />
+                          <span className="text-sm font-medium">Location:</span>
+                          <span className="text-sm">{owner.location_city}</span>
+                        </div>
+                      )}
                     </div>
-                  </Link>
+                  </div>
                 ) : (
                   <Card className="border-2 border-muted">
                     <CardHeader className="text-center p-4">
