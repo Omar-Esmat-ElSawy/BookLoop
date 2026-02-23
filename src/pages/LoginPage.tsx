@@ -154,13 +154,11 @@ const LoginPage = () => {
             <Link to="/signup" className="text-primary hover:underline dark:text-dark-button">
               {t('auth.signup')}
             </Link>
-          </p>
-        </div>
-        <div className="text-center">
-          <p className="text-sm text-muted-foreground dark:text-dark-field">
+          <p className="text-sm text-muted-foreground dark:text-dark-field pt-2">
             <Link to="/books" className="text-primary hover:underline dark:text-dark-button">
               {t('auth.ContinueAsGuest')}
             </Link>
+          </p>
           </p>
         </div>
       </div>
