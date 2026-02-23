@@ -447,7 +447,18 @@
      "messagePlaceholder": "Write a message to the book owner...",
      "cancel": "Cancel",
      "sendRequest": "Send Request",
-     "sending": "Sending..."
+     "sending": "Sending...",
+     "safetyTitle": "Safety Guidelines (Book Exchanges)",
+    "safety": {
+     "1": "Meet in a public place (e.g., a café, mall, or library).",
+     "2": "Avoid meeting at night or in isolated areas.",
+     "3": "Consider bringing a friend or informing someone you trust.",
+     "4": "Do not share sensitive personal information (address, IDs, banking info).",
+     "5": "Use in-app chat whenever possible and keep communication respectful.",
+     "6": "If anything feels suspicious, cancel the exchange immediately."
+},
+"dontShowAgain": "Don't show again",
+"readTerms": "Read Terms & Conditions"
    },
    "toasts": {
      "loggedOutSuccess": "Logged out successfully",

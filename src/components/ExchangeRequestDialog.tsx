@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import {
@@ -32,9 +33,7 @@ const ExchangeRequestDialog = ({ book, open, onOpenChange }: ExchangeRequestDial
   const [requestMessage, setRequestMessage] = useState('');
   const [selectedBookId, setSelectedBookId] = useState<string>('');
   const [isRequesting, setIsRequesting] = useState(false);
-   const { t } = useTranslation();
-
-  // Filter user's available books
+  const { t } = useTranslation();
   const availableUserBooks = userBooks.filter(b => b.is_available);
 
   const handleSubmit = async () => {
@@ -63,7 +62,33 @@ const ExchangeRequestDialog = ({ book, open, onOpenChange }: ExchangeRequestDial
           </DialogDescription>
         </DialogHeader>
         
-        <div className="space-y-4 py-4">
+        <div className="space-y-4 py-4">{true && (
+  <div className="rounded-lg border p-4 bg-muted/30 space-y-3">
+    <div className="flex items-start justify-between gap-3">
+      <div className="space-y-1">
+        <p className="text-sm font-semibold">
+          {t('exchangeDialog.safetyTitle')}
+        </p>
+
+        <ul className="list-disc ps-5 text-xs text-muted-foreground space-y-1">
+          <li>{t('exchangeDialog.safety.1')}</li>
+          <li>{t('exchangeDialog.safety.2')}</li>
+          <li>{t('exchangeDialog.safety.3')}</li>
+          <li>{t('exchangeDialog.safety.4')}</li>
+          <li>{t('exchangeDialog.safety.5')}</li>
+          <li>{t('exchangeDialog.safety.6')}</li>
+        </ul>
+
+        <p className="text-xs text-muted-foreground">
+          <Link to="/terms" className="underline">
+            {t('exchangeDialog.readTerms')}
+          </Link>
+        </p>
+      </div>
+    </div>
+
+  </div>
+)}
           <div className="space-y-2">
              <Label>{t('exchangeDialog.bookYouWant')}</Label>
             <p className="text-sm font-medium border rounded-md p-3 bg-muted/30">
