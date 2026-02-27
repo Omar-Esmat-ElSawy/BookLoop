@@ -33,6 +33,7 @@
     "messages": "الرسائل",
     "exchanges": "التبادلات",
     "profile": "الملف الشخصي",
+    "BottomProfile": "حسابي",
     "login": "تسجيل الدخول",
     "signup": "إنشاء حساب",
     "logout": "تسجيل الخروج",
@@ -126,7 +127,8 @@
     "createPassword": "أنشئ كلمة مرور",
     "confirmYourPassword": "أكد كلمة المرور",
     "enterPhoneNumber": "أدخل رقم هاتفك",
-    "ContinueAsGuest": "تابع كضيف"
+    "ContinueAsGuest": "تابع كضيف",
+    "rememberPassword": "تتذكر كلمة المرور؟"
   },
   "exchange": {
     "requests": "طلبات التبادل",

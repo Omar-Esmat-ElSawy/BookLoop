@@ -133,7 +133,7 @@ const ForgotPasswordPage = () => {
         
         <div className="text-center">
           <p className="text-sm text-muted-foreground dark:text-dark-field">
-            Remember your password?{' '}
+            {t('auth.rememberPassword')}{' '}
             <Link to="/login" className="text-primary hover:underline dark:text-dark-button">
               {t('auth.signIn')}
             </Link>

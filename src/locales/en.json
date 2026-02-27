@@ -33,6 +33,7 @@
     "messages": "Messages",
     "exchanges": "Exchanges",
     "profile": "Profile",
+    "BottomProfile": "Profile",
     "login": "Log In",
     "signup": "Sign Up",
     "logout": "Log out",
@@ -126,7 +127,8 @@
     "createPassword": "Create a password",
     "confirmYourPassword": "Confirm your password",
     "enterPhoneNumber": "Enter your phone number",
-    "ContinueAsGuest": "Continue as Guest"
+    "ContinueAsGuest": "Continue as Guest",
+    "rememberPassword": "Remember your password?"
   },
   "exchange": {
     "requests": "Exchange Requests",

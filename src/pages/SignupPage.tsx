@@ -287,7 +287,7 @@ const SignupPage = () => {
             </Link>
           </p>
                   <p className="text-sm text-muted-foreground dark:text-dark-field pt-2">
-                    <Link to="/books" className="text-primary hover:underline dark:text-dark-button">
+                    <Link to="/" className="text-primary hover:underline dark:text-dark-button">
                       {t('auth.ContinueAsGuest')}
                     </Link>
                   </p>
