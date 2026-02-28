@@ -9,6 +9,8 @@ import { useBooks } from '@/contexts/BooksContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { motion } from "framer-motion";
+import Reveal from "@/components/motion/Reveal";
 
 const HomePage = () => {
   const [playHomeIntro] = useState(() => sessionStorage.getItem('homeIntroPlayed') !== '1');
@@ -86,88 +88,82 @@ const HomePage = () => {
 
       <main className="flex-1 pb-20 md:pb-0">
         {/* Hero Section */}
-        <section className="bg-gradient-to-b from-ink-100 to-transparent dark:from-ink-700/20 dark:to-transparent py-8 md:py-16 lg:py-24 animate-in fade-in duration-700">
+        <motion.section
+          className="bg-gradient-to-b from-ink-100 to-transparent dark:from-ink-700/20 dark:to-transparent py-8 md:py-16 lg:py-24"
+          initial={playHomeIntro ? { opacity: 0 } : false}
+          animate={playHomeIntro ? { opacity: 1 } : undefined}
+          transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+        >
           <div className="container mx-auto px-4 text-center">
-            <h1
-              className={`text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-bold mb-4 md:mb-6 ${
-                playHomeIntro ? 'animate-in slide-in-from-bottom-8 fade-in duration-1100 ease-out delay-100' : ''
-              }`}
-            >
-            <span className="gradient-text">{t('home.title')}</span> {t('home.subtitle')}
-            </h1>
-            <p
-              className={`text-base md:text-lg lg:text-xl mb-6 md:mb-8 max-w-2xl mx-auto text-muted-foreground ${
-                playHomeIntro ? 'animate-in slide-in-from-bottom-8 fade-in duration-1100 ease-out delay-200' : ''
-              }`}
-            >
-            {t('home.description')}
-            </p>
+            <Reveal delay={0.08}>
+              <h1 className="text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-bold mb-4 md:mb-6">
+                <span className="gradient-text">{t('home.title')}</span> {t('home.subtitle')}
+              </h1>
+            </Reveal>
+            <Reveal delay={0.14}>
+              <p className="text-base md:text-lg lg:text-xl mb-6 md:mb-8 max-w-2xl mx-auto text-muted-foreground">
+                {t('home.description')}
+              </p>
+            </Reveal>
             
-            <form
-              onSubmit={handleSearch}
-              className={`flex gap-2 max-w-md mx-auto mb-6 md:mb-8 ${
-                playHomeIntro ? 'animate-in slide-in-from-bottom-8 fade-in duration-1100 ease-out delay-300' : ''
-              }`}
-            > 
-            <div className="relative flex-1">
-                <Search className="absolute start-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                <Input
-                  type="search"
-                  placeholder={t('home.searchPlaceholder')}
-                  className="ps-10"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                />
+            <Reveal delay={0.20}>
+              <form onSubmit={handleSearch} className="flex gap-2 max-w-md mx-auto mb-6 md:mb-8">
+              <div className="relative flex-1">
+                  <Search className="absolute start-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                  <Input
+                    type="search"
+                    placeholder={t('home.searchPlaceholder')}
+                    className="ps-10"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                  />
+                </div>
+                <Button type="submit">{t('common.search')}</Button>
+              </form>
+            </Reveal>
+            
+            <Reveal delay={0.26}>
+              <div className="flex flex-col sm:flex-row justify-center gap-3 md:gap-4">
+                <Link to="/books" className="w-full sm:w-auto">
+                  <Button variant="secondary" size="lg" className="gap-2 w-full sm:w-auto">
+                    <BookOpen className="h-5 w-5" />
+                    {t('home.browseBooks')}
+                  </Button>
+                </Link>
+                {!user ? (
+                  <Link to="/login" className="w-full sm:w-auto">
+                    <Button size="lg" className="w-full sm:w-auto">{t('home.joinNow')}</Button>
+                  </Link>
+                ) : (
+                  <Link to="/books/add" className="w-full sm:w-auto">
+                    <Button size="lg" className="w-full sm:w-auto">{t('home.addYourBook')}</Button>
+                  </Link>
+                )}
               </div>
-              <Button type="submit">{t('common.search')}</Button>
-            </form>
-            
-            <div
-              className={`flex flex-col sm:flex-row justify-center gap-3 md:gap-4 ${
-                playHomeIntro ? 'animate-in slide-in-from-bottom-8 fade-in duration-1100 ease-out delay-400' : ''
-              }`}
-            >
-              <Link to="/books" className="w-full sm:w-auto">
-                <Button variant="secondary" size="lg" className="gap-2 w-full sm:w-auto">
-                  <BookOpen className="h-5 w-5" />
-                  {t('home.browseBooks')}
-                </Button>
-              </Link>
-              {!user ? (
-                <Link to="/login" className="w-full sm:w-auto">
-                  <Button size="lg" className="w-full sm:w-auto">{t('home.joinNow')}</Button>
-                </Link>
-              ) : (
-                <Link to="/books/add" className="w-full sm:w-auto">
-                  <Button size="lg" className="w-full sm:w-auto">{t('home.addYourBook')}</Button>
-                </Link>
-              )}
+              </Reveal>
             </div>
-          </div>
-        </section>
+        </motion.section>
 
         {/* Recently Added Section */}
-        <section
-          className={`py-6 md:py-12 container mx-auto px-4 ${
-            playHomeIntro ? 'animate-in fade-in duration-1200 ease-out delay-500' : ''
-          }`}
-        >
+        <section className="py-6 md:py-12 container mx-auto px-4">
+          <Reveal>
           <BookRow 
             title={t('home.recentlyAdded')} 
             books={recentlyAdded} 
             viewAllLink="/books"
             emptyMessage={loading ? t('common.loading') : t('home.noBooksYet')} 
           />
-          
+          </Reveal>
           {/* Books by Genre */}
-          {Object.entries(booksByGenre).map(([genre, books]) => (
+          {Object.entries(booksByGenre).map(([genre, books], idx) => (
             books.length > 0 && (
-              <BookRow 
-                key={genre}
-                 title={getTranslatedGenre(genre)}
-                books={books}
-                viewAllLink={`/books?genre=${encodeURIComponent(genre)}`}
-              />
+              <Reveal key={genre} delay={Math.min(idx * 0.04, 0.2)}>
+                <BookRow
+                  title={getTranslatedGenre(genre)}
+                  books={books}
+                  viewAllLink={`/books?genre=${encodeURIComponent(genre)}`}
+                />
+              </Reveal>
             )
           ))}
         </section>

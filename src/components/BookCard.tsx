@@ -1,11 +1,9 @@
-
-import React from 'react';
 import { Link } from 'react-router-dom';
 import { Book } from '@/types/database.types';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import { useTranslation } from 'react-i18next';
-import { useLanguage } from '@/contexts/LanguageContext';
+import { motion } from "framer-motion";
 
 interface BookCardProps {
   book: Book;
@@ -48,6 +46,8 @@ const genreKeyMap: Record<string, string> = {
   'health': 'genres.health',
 };
 
+const MotionLink = motion(Link);
+
 const BookCard = ({ book, className }: BookCardProps) => {
   const { t } = useTranslation();
   const genreColor = getGenreColor(book.genre);
@@ -64,12 +64,22 @@ const BookCard = ({ book, className }: BookCardProps) => {
   };
   
   return (
-    <Link to={`/books/${book.id}`} className={cn("book-card flex flex-col rounded-lg overflow-hidden border bg-card h-full", className)}>
+    <MotionLink
+    to={`/books/${book.id}`}
+    className={cn("book-card flex flex-col rounded-lg overflow-hidden border bg-card h-full", className)}
+    whileHover={{ scale: 1.05, y: -6 }}
+    whileTap={{ scale: 0.98 }}
+    transition={{
+      type: "spring",
+      stiffness: 300,
+      damping: 50
+    }}
+    >
       <div className="relative aspect-[2/3] overflow-hidden">
         <img 
           src={book.cover_image_url || '/placeholder.svg'} 
           alt={book.title}
-          className="w-full h-full object-cover"
+          className="w-full h-full object-cover transition-transform duration-700 ease-out will-change-transform group-hover:scale-[1.12]"
           onError={(e) => {
             (e.target as HTMLImageElement).src = '/placeholder.svg';
           }}
@@ -89,7 +99,7 @@ const BookCard = ({ book, className }: BookCardProps) => {
           </Badge>
         </div>
       </div>
-    </Link>
+    </MotionLink>
   );
 };
 

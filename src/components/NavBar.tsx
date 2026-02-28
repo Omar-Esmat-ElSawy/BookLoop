@@ -22,6 +22,8 @@ import { useTheme } from './theme-provider';
 import { useTranslation } from 'react-i18next';
 import logoLight from '@/assets/logo-light.ico';
 import logoDark from '@/assets/logo-dark.ico';
+import { motion } from "framer-motion";
+import { cn } from "@/lib/utils";
 
 interface NavBarProps {}
 let navIntroPlayed = false;
@@ -40,7 +42,12 @@ const NavBar = ({ }: NavBarProps) => {
   const isRtl = i18n.dir() === 'rtl';
   const location = useLocation();
   const [showNotifications, setShowNotifications] = useState(false);
-
+  const { pathname } = useLocation();
+  const isHome = pathname === "/" || pathname === "/home";  
+  const navPositionClass = isHome
+  ? "sticky top-0 md:fixed md:top-0 md:left-0 md:right-0"
+  : "sticky top-0";
+  
   const getActualTheme = () => {
     if (theme === 'system') {
       return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
@@ -53,13 +60,16 @@ const NavBar = ({ }: NavBarProps) => {
   const toggleNotifications = () => {
     setShowNotifications(!showNotifications);
   };
-  
   return (
-<header
-  className={`sticky top-0 z-40 w-full border-b border-border/20 bg-background/70 backdrop-blur-xl backdrop-saturate-150 shadow-sm dark:shadow-primary/5 ${
-    playNavIntro ? 'animate-in slide-in-from-top-10 fade-in duration-1000 ease-out' : ''
-  }`}
->
+    <motion.header
+      className={cn(
+        navPositionClass,
+        "z-50 w-full border-b border-border/20 bg-transparent backdrop-blur-xl backdrop-saturate-150 shadow-sm"
+      )}
+      initial={playNavIntro ? { y: -16, opacity: 0, filter: "blur(10px)" } : false}
+      animate={playNavIntro ? { y: 0, opacity: 1, filter: "blur(0px)" } : undefined}
+      transition={{ duration: 1.2, delay: 1, ease: [0.22, 1, 0.36, 1] }}
+    >
       <div className="container mx-auto flex h-20 md:h-16 items-center justify-between px-4">
         <div className="flex items-center gap-2">
           <Link to="/" className="group flex items-center gap-2">
@@ -235,7 +245,7 @@ const NavBar = ({ }: NavBarProps) => {
           </div>
         </div>
       )}
-    </header>
+    </motion.header>
   );
 };
 

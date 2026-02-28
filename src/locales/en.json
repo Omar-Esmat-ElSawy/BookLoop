@@ -219,7 +219,15 @@
     "manage": "Manage Subscription",
     "features": "Features",
     "subscribe": "Subscribe",
-    "success": "Subscription Successful!"
+    "success": "Subscription Successful!",
+    "required": "Subscription Required",
+    "needToSubscribe": "You need to subscribe for 20 EGP/month to access this feature",
+    "SubscriptionFeatures": "Monthly subscription includes:",
+    "accessToChatSystem": "Access to the chat system",
+    "sendBookExchangeRequests": "Send book exchange requests",
+    "viewBookOwnerDetails": "View book owner details",
+    "addBooksForExchange": "Add books for exchange",
+    "subscribeNow":"Subscribe Now - 20 EGP/month"
   },
   "form": {
     "required": "This field is required",

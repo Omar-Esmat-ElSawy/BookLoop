@@ -39,7 +39,7 @@ const BookRow = ({ title, books, viewAllLink, emptyMessage }: BookRowProps) => {
       
       {books.length > 0 ? (
         <ScrollArea className="w-full whitespace-nowrap pb-4" dir={isRTL ? 'rtl' : 'ltr'}>
-          <div className="flex gap-3 md:gap-4">
+          <div className="flex gap-3 md:gap-4 py-4">
             {books.map((book) => (
               <BookCard 
                 key={book.id} 

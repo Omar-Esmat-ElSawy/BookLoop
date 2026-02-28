@@ -218,7 +218,15 @@
     "manage": "إدارة الاشتراك",
     "features": "المميزات",
     "subscribe": "اشترك",
-    "success": "تم الاشتراك بنجاح!"
+    "success": "تم الاشتراك بنجاح!",
+    "required": "الاشتراك مطلوب",
+    "needToSubscribe": "تحتاج إلى الاشتراك مقابل 20 جنيه/شهر للوصول إلى هذه الميزة",
+    "SubscriptionFeatures": "المميزات المتضمنة في الاشتراك الشهري:",
+    "accessToChatSystem": "الوصول لنظام المحادثة",
+    "sendBookExchangeRequests": "إرسال طلبات تبادل الكتب",
+    "viewBookOwnerDetails": "عرض تفاصيل الاتصال بمالك الكتاب",
+    "addBooksForExchange": "إضافة كتب للتبادل",
+    "subscribeNow":"اشترك الآن - 20 جنيه/شهر"
   },
   "form": {
     "required": "هذا الحقل مطلوب",
