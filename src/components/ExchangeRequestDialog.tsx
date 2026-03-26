@@ -54,8 +54,8 @@ const ExchangeRequestDialog = ({ book, open, onOpenChange }: ExchangeRequestDial
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-md">
-        <DialogHeader>
+      <DialogContent className="max-w-md ">
+        <DialogHeader className= "flex items-start justify-between mt-2">
            <DialogTitle>{t('exchangeDialog.title')}</DialogTitle>
           <DialogDescription>
              {t('exchangeDialog.description', { title: book.title })}

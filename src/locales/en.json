@@ -128,7 +128,9 @@
     "confirmYourPassword": "Confirm your password",
     "enterPhoneNumber": "Enter your phone number",
     "ContinueAsGuest": "Continue as Guest",
-    "rememberPassword": "Remember your password?"
+    "rememberPassword": "Remember your password?",
+    "passwordResetSuccess": "Password reset successful!",
+    "redirectingToLogin": "You will be redirected to the login page shortly."
   },
   "exchange": {
     "requests": "Exchange Requests",
@@ -504,7 +506,7 @@
      "failedToCreateCheckout": "Failed to create checkout session",
      "pleaseLoginToManageSubscription": "Please log in to manage your subscription",
      "failedToOpenCustomerPortal": "Failed to open customer portal",
-     
+     "checkYourEmailForResetLink": "Please check your email for the password reset link",
      "provideEmailOrUsername": "Please provide either email or username",
      "failedToGrantSubscription": "Failed to grant subscription",
      

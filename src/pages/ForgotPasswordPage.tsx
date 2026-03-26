@@ -116,9 +116,9 @@ const ForgotPasswordPage = () => {
         ) : (
           <div className="text-center space-y-4">
             <div className="bg-green-50 text-green-800 rounded-md p-4 dark:bg-green-900/20 dark:text-green-300">
-              <p>Password reset link sent to your email.</p>
+              <p>{t('toasts.passwordResetEmailSent')}</p>
               <p className="text-sm mt-2">
-                Please check your inbox and follow the instructions.
+                {t('toasts.checkYourEmailForResetLink')}
               </p>
             </div>
             <Button 

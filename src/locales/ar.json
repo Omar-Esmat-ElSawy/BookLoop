@@ -128,7 +128,9 @@
     "confirmYourPassword": "أكد كلمة المرور",
     "enterPhoneNumber": "أدخل رقم هاتفك",
     "ContinueAsGuest": "تابع كضيف",
-    "rememberPassword": "تتذكر كلمة المرور؟"
+    "rememberPassword": "تتذكر كلمة المرور؟",
+    "passwordResetSuccess": "تمت إعادة تعيين كلمة المرور بنجاح!",
+    "redirectingToLogin": "سيتم إعادة توجيهك إلى صفحة تسجيل الدخول قريبًا."
   },
   "exchange": {
     "requests": "طلبات التبادل",
@@ -495,7 +497,7 @@
      "locationUnavailable": "معلومات الموقع غير متاحة",
      "locationTimeout": "انتهت مهلة طلب الموقع",
      "failedToGetLocation": "فشل الحصول على الموقع",
-     
+     "checkYourEmailForResetLink": "يرجى التحقق من بريدك الإلكتروني لرابط إعادة تعيين كلمة المرور",
      "cannotChatWithYourself": "لا يمكنك مراسلة نفسك",
      "userNotFound": "المستخدم غير موجود",
      

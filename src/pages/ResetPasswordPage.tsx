@@ -163,9 +163,9 @@ const ResetPasswordPage = () => {
         ) : (
           <div className="text-center space-y-4">
             <div className="bg-green-50 text-green-800 rounded-md p-4 dark:bg-green-900/20 dark:text-green-300">
-              <p>Password reset successful!</p>
+              <p>{t('auth.passwordResetSuccess')}</p>
               <p className="text-sm mt-2">
-                You will be redirected to the login page shortly.
+                {t('auth.redirectingToLogin')}
               </p>
             </div>
             <Button 
