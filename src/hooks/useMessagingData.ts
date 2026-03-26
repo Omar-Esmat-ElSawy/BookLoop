@@ -36,7 +36,7 @@ export const useMessagingData = () => {
       socket.emit('join', user.id);
 
       // Listen for incoming messages
-      socket.on('receive_message', (payload: Message) => {
+      socket.on('receive_message', (payload: MessageWithUser) => {
         handleNewMessage(payload);
       });
 
@@ -58,13 +58,13 @@ export const useMessagingData = () => {
   }, [user]);
 
   // Handle new incoming messages
-  const handleNewMessage = async (message: Message) => {
+  const handleNewMessage = async (message: MessageWithUser) => {
     try {
       // Only process if we're the receiver
       if (!user || message.receiver_id !== user.id) return;
       
-      // Fetch the sender details
-      const sender = await fetchUserProfile(message.sender_id);
+      // Use the sender info from the payload if available, else fetch it
+      const sender = message.sender || await fetchUserProfile(message.sender_id);
       if (!sender) return;
       
       // Update the chat partners list
@@ -105,12 +105,15 @@ export const useMessagingData = () => {
       });
       
       // If we're currently chatting with this person, update the current chat
-      if (currentChat.partner?.id === sender.id) {
-        setCurrentChat(prev => ({
-          ...prev,
-          messages: [...prev.messages, { ...message, sender }]
-        }));
-      }
+      setCurrentChat(prev => {
+        if (prev.partner?.id === sender.id) {
+          return {
+            ...prev,
+            messages: [...prev.messages, { ...message, sender }]
+          };
+        }
+        return prev;
+      });
     } catch (error) {
       console.error('Error handling new message:', error);
     }
