@@ -5,6 +5,7 @@ import { User } from '@/types/database.types';
 import { MessagingContextProps, CurrentChat } from '@/types/messaging.types';
 import { useAuth } from './AuthContext';
 import { useMessagingData } from '@/hooks/useMessagingData';
+import socket from '@/lib/socket';
 import { 
   searchUsers as searchUsersService, 
   fetchUserProfile,
@@ -114,6 +115,16 @@ export const MessagingProvider = ({ children }: { children: ReactNode }) => {
           receiver: prev.partner 
         }],
       }));
+
+      // Emit the message via Socket.io for real-time delivery
+      socket.emit('send_message', {
+        receiverId: currentChat.partner.id,
+        message: {
+          ...messageData,
+          sender: user,
+          receiver: currentChat.partner
+        }
+      });
       
       // Refresh the chat partners list to update with the new message
       fetchChatPartners();

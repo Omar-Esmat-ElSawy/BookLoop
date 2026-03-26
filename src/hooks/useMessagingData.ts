@@ -2,6 +2,7 @@
 import { useState, useEffect } from 'react';
 import { toast } from 'sonner';
 import supabase from '@/lib/supabase';
+import socket from '@/lib/socket';
 import { useAuth } from '@/contexts/AuthContext';
 import { User, Message } from '@/types/database.types';
 import { ChatPartner, CurrentChat, MessageWithUser } from '@/types/messaging.types';
@@ -26,26 +27,22 @@ export const useMessagingData = () => {
     if (user) {
       fetchChatPartners();
       
-      // Subscribe to new messages
-      const messagesSubscription = supabase
-        .channel('messages_channel')
-        .on(
-          'postgres_changes',
-          {
-            event: 'INSERT',
-            schema: 'public',
-            table: 'messages',
-            filter: `receiver_id=eq.${user.id}`,
-          },
-          (payload) => {
-            const newMessage = payload.new as Message;
-            handleNewMessage(newMessage);
-          }
-        )
-        .subscribe();
+      // Initialize socket connection
+      if (!socket.connected) {
+        socket.connect();
+      }
+      
+      // Join as current user
+      socket.emit('join', user.id);
+
+      // Listen for incoming messages
+      socket.on('receive_message', (payload: Message) => {
+        handleNewMessage(payload);
+      });
 
       return () => {
-        messagesSubscription.unsubscribe();
+        socket.off('receive_message');
+        socket.disconnect();
       };
     } else {
       setChatPartners([]);
@@ -54,6 +51,9 @@ export const useMessagingData = () => {
         messages: [],
         loading: false,
       });
+      if (socket.connected) {
+        socket.disconnect();
+      }
     }
   }, [user]);
 
