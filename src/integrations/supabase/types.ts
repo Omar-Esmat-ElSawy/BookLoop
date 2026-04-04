@@ -224,30 +224,36 @@ export type Database = {
       support_messages: {
         Row: {
           admin_reply: boolean | null
+          category: string | null
           content: string
           created_at: string | null
           id: string
           image_url: string | null
           is_read: boolean | null
           sender_id: string
+          subcategory: string | null
         }
         Insert: {
           admin_reply?: boolean | null
+          category?: string | null
           content: string
           created_at?: string | null
           id?: string
           image_url?: string | null
           is_read?: boolean | null
           sender_id: string
+          subcategory?: string | null
         }
         Update: {
           admin_reply?: boolean | null
+          category?: string | null
           content?: string
           created_at?: string | null
           id?: string
           image_url?: string | null
           is_read?: boolean | null
           sender_id?: string
+          subcategory?: string | null
         }
         Relationships: [
           {

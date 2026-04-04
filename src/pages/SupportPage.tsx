@@ -11,6 +11,14 @@ import { Loader2, Send, HelpCircle, Image as ImageIcon } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { format } from 'date-fns';
+import { 
+  Select, 
+  SelectContent, 
+  SelectItem, 
+  SelectTrigger, 
+  SelectValue 
+} from '@/components/ui/select';
+import { SUPPORT_CATEGORIES, getCategoryById } from '@/constants/supportConstants';
 
 interface SupportMessage {
   id: string;
@@ -20,6 +28,8 @@ interface SupportMessage {
   is_read: boolean;
   created_at: string;
   admin_reply: boolean;
+  category: string | null;
+  subcategory: string | null;
 }
 
 export default function SupportPage() {
@@ -32,6 +42,8 @@ export default function SupportPage() {
   const [loading, setLoading] = useState(true);
   const [imageUrl, setImageUrl] = useState('');
   const [isUploadingImage, setIsUploadingImage] = useState(false);
+  const [selectedCategoryId, setSelectedCategoryId] = useState<string>('');
+  const [selectedSubcategory, setSelectedSubcategory] = useState<string>('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -118,6 +130,11 @@ export default function SupportPage() {
   const handleSendMessage = async () => {
     if (!user || (!newMessage.trim() && !imageUrl)) return;
     
+    if (!selectedCategoryId || !selectedSubcategory) {
+      toast.error(t('support.selectCategoryFirst'));
+      return;
+    }
+    
     setIsSending(true);
     try {
     const { data, error } = await supabase
@@ -127,7 +144,9 @@ export default function SupportPage() {
       content: newMessage.trim() || (imageUrl ? t('support.imageAttached') : ''),
       image_url: imageUrl || null,
       admin_reply: false,
-      is_read: false
+      is_read: false,
+      category: selectedCategoryId,
+      subcategory: selectedSubcategory
     })
     .select()
     .single();
@@ -284,6 +303,53 @@ export default function SupportPage() {
                       </Button>
                     </div>
                   )}
+                  <div className="grid grid-cols-2 gap-2">
+                    <div className="space-y-1">
+                      <label className="text-xs font-medium text-muted-foreground ms-1">
+                        {t('support.category')}
+                      </label>
+                      <Select
+                        value={selectedCategoryId}
+                        onValueChange={(value) => {
+                          setSelectedCategoryId(value);
+                          setSelectedSubcategory(''); // Reset subcategory when category changes
+                        }}
+                      >
+                        <SelectTrigger className="h-9">
+                          <SelectValue placeholder={t('support.selectCategory')} />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {SUPPORT_CATEGORIES.map((cat) => (
+                            <SelectItem key={cat.id} value={cat.id}>
+                              {t(cat.labelKey)}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="space-y-1">
+                      <label className="text-xs font-medium text-muted-foreground ms-1">
+                        {t('support.subcategory')}
+                      </label>
+                      <Select
+                        value={selectedSubcategory}
+                        onValueChange={setSelectedSubcategory}
+                        disabled={!selectedCategoryId}
+                      >
+                        <SelectTrigger className="h-9">
+                          <SelectValue placeholder={t('support.selectSubcategory')} />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {selectedCategoryId && getCategoryById(selectedCategoryId).subcategories.map((sub) => (
+                            <SelectItem key={sub} value={sub}>
+                              {t(sub)}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+
                   <div className="flex gap-2">
                     <Textarea
                       value={newMessage}

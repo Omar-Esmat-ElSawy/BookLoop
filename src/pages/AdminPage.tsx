@@ -8,12 +8,14 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { toast } from 'sonner';
 import NavBar from '@/components/NavBar';
-import { Loader2, Shield, MessageSquare, Send, Image as ImageIcon } from 'lucide-react';
+import { Loader2, Shield, MessageSquare, Send, Image as ImageIcon, ArrowLeft, Inbox } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { format } from 'date-fns';
 import { Textarea } from '@/components/ui/textarea';
+import { Badge } from '@/components/ui/badge';
+import { SUPPORT_CATEGORIES, getCategoryColor } from '@/constants/supportConstants';
 
 interface SupportMessage {
   id: string;
@@ -23,6 +25,8 @@ interface SupportMessage {
   is_read: boolean;
   created_at: string;
   admin_reply: boolean;
+  category: string | null;
+  subcategory: string | null;
   sender?: {
     username: string;
     avatar_url: string | null;
@@ -36,6 +40,8 @@ interface SupportThread {
   lastMessage: SupportMessage;
   unreadCount: number;
   messages: SupportMessage[];
+  category: string | null;
+  subcategory: string | null;
 }
 
 export default function AdminPage() {
@@ -56,9 +62,14 @@ export default function AdminPage() {
   const [loadingSupport, setLoadingSupport] = useState(true);
   const [replyImageUrl, setReplyImageUrl] = useState('');
   const [isUploadingImage, setIsUploadingImage] = useState(false);
+  const [selectedCategoryId, setSelectedCategoryId] = useState<string | null>(null);
+  const [categoryStats, setCategoryStats] = useState<Record<string, { total: number, unread: number }>>({});
 
   // Derive selectedThread from threads array and selectedThreadId
   const selectedThread = supportThreads.find(t => t.userId === selectedThreadId) || null;
+  const filteredThreads = selectedCategoryId 
+    ? supportThreads.filter(t => t.category === selectedCategoryId)
+    : [];
 
   // Fetch support messages
   useEffect(() => {
@@ -130,10 +141,29 @@ export default function AdminPage() {
 
       const usersMap = new Map(users?.map(u => [u.id, u]) || []);
 
+      // Initialize stats
+      const stats: Record<string, { total: number, unread: number }> = {};
+      SUPPORT_CATEGORIES.forEach(cat => {
+        stats[cat.id] = { total: 0, unread: 0 };
+      });
+
       // Group messages by user (non-admin senders)
       const threadsMap = new Map<string, SupportThread>();
       
       messages.forEach((msg: any) => {
+        // Stats calculation
+        if (!msg.admin_reply && msg.category) {
+          if (!stats[msg.category]) {
+            stats[msg.category] = { total: 0, unread: 0 };
+          }
+          // We only count each thread once for stats? 
+          // Actually, let's count total messages and unread messages in that category.
+          stats[msg.category].total++;
+          if (!msg.is_read) {
+            stats[msg.category].unread++;
+          }
+        }
+
         // Find the original user who started the conversation
         const userId = msg.admin_reply ? null : msg.sender_id;
         
@@ -147,7 +177,9 @@ export default function AdminPage() {
               avatarUrl: userInfo?.avatar_url || null,
               lastMessage: msg,
               unreadCount: 0,
-              messages: []
+              messages: [],
+              category: msg.category || null,
+              subcategory: msg.subcategory || null
             });
           }
           
@@ -161,13 +193,18 @@ export default function AdminPage() {
           if (new Date(msg.created_at) > new Date(thread.lastMessage.created_at)) {
             thread.lastMessage = msg;
           }
+
+          // Update thread category if message has one
+          if (msg.category) {
+            thread.category = msg.category;
+            thread.subcategory = msg.subcategory;
+          }
         }
       });
 
       // Also add admin replies to the correct threads
       messages.forEach((msg: any) => {
         if (msg.admin_reply) {
-          // Admin replies have sender_id = thread user's ID
           const thread = threadsMap.get(msg.sender_id);
           if (thread) {
             if (!thread.messages.find((m) => m.id === msg.id)) {
@@ -187,12 +224,18 @@ export default function AdminPage() {
         );
       });
 
-      const threadsArray = Array.from(threadsMap.values()).sort((a, b) => 
-        new Date(b.lastMessage.created_at).getTime() - new Date(a.lastMessage.created_at).getTime()
-      );
+      // Sort threads: Unread first, then date
+      const threadsArray = Array.from(threadsMap.values()).sort((a, b) => {
+        // Prioritize threads with unread count
+        if (a.unreadCount > 0 && b.unreadCount === 0) return -1;
+        if (a.unreadCount === 0 && b.unreadCount > 0) return 1;
+        
+        // Otherwise sort by most recent message
+        return new Date(b.lastMessage.created_at).getTime() - new Date(a.lastMessage.created_at).getTime();
+      });
       
       setSupportThreads(threadsArray);
-      // No need to update selectedThread - it's derived from selectedThreadId
+      setCategoryStats(stats);
     } catch (error) {
       console.error('Error fetching support messages:', error);
     } finally {
@@ -212,7 +255,9 @@ export default function AdminPage() {
         content: replyContent.trim() || (replyImageUrl ? t('admin.imageAttached') : ''),
         image_url: replyImageUrl || null,
         admin_reply: true,
-        is_read: false
+        is_read: false,
+        category: selectedThread.category,
+        subcategory: selectedThread.subcategory
       })
       .select()
       .single();
@@ -443,73 +488,153 @@ const markThreadAsRead = async (thread: SupportThread) => {
         {/* Support Messages Card */}
         <Card>
           <CardHeader>
-            <div className="flex items-center gap-2">
-              <MessageSquare className="h-6 w-6 text-primary" />
-              <CardTitle>{t('admin.supportMessages')}</CardTitle>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                {selectedCategoryId && (
+                  <Button 
+                    variant="ghost" 
+                    size="icon" 
+                    onClick={() => {
+                      setSelectedCategoryId(null);
+                      setSelectedThreadId(null);
+                    }}
+                    className="h-8 w-8"
+                  >
+                    <ArrowLeft className="h-4 w-4" />
+                  </Button>
+                )}
+                <MessageSquare className="h-6 w-6 text-primary" />
+                <CardTitle>
+                  {selectedCategoryId 
+                    ? t(SUPPORT_CATEGORIES.find(c => c.id === selectedCategoryId)?.labelKey || '')
+                    : t('admin.supportMessages')}
+                </CardTitle>
+              </div>
+              {selectedCategoryId && (
+                <Badge variant="outline" className="font-normal text-xs">
+                  {categoryStats[selectedCategoryId]?.unread || 0} {t('support.unread')}
+                </Badge>
+              )}
             </div>
             <CardDescription>
-              {t('admin.supportMessagesDesc')}
+              {selectedCategoryId 
+                ? t('admin.viewingCategoryMessages')
+                : t('admin.supportMessagesDesc')}
             </CardDescription>
           </CardHeader>
           <CardContent>
             {loadingSupport ? (
-              <div className="flex items-center justify-center py-8">
-                <Loader2 className="h-6 w-6 animate-spin text-primary" />
+              <div className="flex items-center justify-center py-12">
+                <Loader2 className="h-8 w-8 animate-spin text-primary" />
+              </div>
+            ) : !selectedCategoryId ? (
+              /* Category Overview Grid */
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 py-2">
+                {SUPPORT_CATEGORIES.map((cat) => {
+                  const stats = categoryStats[cat.id] || { total: 0, unread: 0 };
+                  return (
+                    <button
+                      key={cat.id}
+                      onClick={() => setSelectedCategoryId(cat.id)}
+                      className="flex flex-col p-5 rounded-xl border transition-all hover:shadow-md text-start group relative overflow-hidden"
+                    >
+                      <div className={`absolute top-0 start-0 w-2 h-full ${cat.color}`} />
+                      <div className="flex justify-between items-start mb-4">
+                        <div className={`p-2 rounded-lg ${cat.color} bg-opacity-10`}>
+                          <Inbox className={`h-5 w-5 ${cat.color.replace('bg-', 'text-')}`} />
+                        </div>
+                        {stats.unread > 0 && (
+                          <span className="bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full animate-pulse">
+                            {stats.unread} {t('support.new')}
+                          </span>
+                        )}
+                      </div>
+                      <h4 className="font-bold text-lg mb-1">{t(cat.labelKey)}</h4>
+                      <div className="flex items-center gap-3 mt-auto pt-2">
+                        <div className="text-sm">
+                          <span className="text-muted-foreground">{t('support.total')}:</span>
+                          <span className="ms-1 font-semibold">{stats.total}</span>
+                        </div>
+                      </div>
+                    </button>
+                  );
+                })}
               </div>
             ) : (
+              /* Categorized Threads View */
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 h-[500px]">
                 {/* Threads List */}
-                <div className="border rounded-lg overflow-hidden">
-                  <div className="p-3 border-b bg-secondary/50">
+                <div className="border rounded-lg overflow-hidden flex flex-col">
+                  <div className="p-3 border-b bg-secondary/50 flex justify-between items-center">
                     <h3 className="font-medium">{t('admin.conversations')}</h3>
                   </div>
-                  <ScrollArea className="h-[440px]">
-                    {supportThreads.length > 0 ? (
-                      supportThreads.map((thread) => (
+                  <ScrollArea className="flex-1">
+                    {filteredThreads.length > 0 ? (
+                      filteredThreads.map((thread) => (
                         <button
                           key={thread.userId}
-                          className={`w-full text-start p-3 hover:bg-secondary/50 flex items-center gap-3 border-b ${
+                          className={`w-full text-start p-3 hover:bg-secondary/50 flex items-center gap-3 border-b transition-colors relative ${
                             selectedThread?.userId === thread.userId ? 'bg-secondary' : ''
-                          }`}
+                          } ${thread.unreadCount > 0 ? 'bg-primary/5' : ''}`}
                           onClick={() => {
                             setSelectedThreadId(thread.userId);
                           }}
                         >
+                          {thread.unreadCount > 0 && (
+                            <div className="absolute start-0 top-0 bottom-0 w-1 bg-primary" />
+                          )}
                           <div className="relative">
                             <Avatar className="h-10 w-10">
                               <AvatarImage src={thread.avatarUrl || ''} />
                               <AvatarFallback>{thread.username?.[0]?.toUpperCase() || 'U'}</AvatarFallback>
                             </Avatar>
                             {thread.unreadCount > 0 && (
-                              <span className="absolute -top-1 -end-1 bg-primary text-primary-foreground rounded-full w-5 h-5 flex items-center justify-center text-xs">
+                              <span className="absolute -top-1 -end-1 bg-red-500 text-white border-2 border-background rounded-full w-5 h-5 flex items-center justify-center text-[10px] font-bold">
                                 {thread.unreadCount > 9 ? '9+' : thread.unreadCount}
                               </span>
                             )}
                           </div>
                           <div className="flex-1 min-w-0">
                             <div className="flex justify-between">
-                              <p className="font-medium truncate">{thread.username}</p>
-                              <p className="text-xs text-muted-foreground">
-                                {format(new Date(thread.lastMessage.created_at), 'MMM d')}
+                              <p className={`truncate ${thread.unreadCount > 0 ? 'font-bold text-primary' : 'font-medium'}`}>
+                                {thread.username}
+                              </p>
+                              <p className="text-[10px] text-muted-foreground whitespace-nowrap">
+                                {format(new Date(thread.lastMessage.created_at), 'MMM d, p')}
                               </p>
                             </div>
-                            <p className="text-sm text-muted-foreground truncate">
-                              {thread.lastMessage.admin_reply && `${t('common.you')}: `}
-                              {thread.lastMessage.content}
-                            </p>
+                            <div className="flex items-center gap-2 mt-0.5">
+                              <p className={`text-sm truncate flex-1 ${thread.unreadCount > 0 ? 'text-foreground font-semibold' : 'text-muted-foreground'}`}>
+                                {thread.lastMessage.admin_reply && `${t('common.you')}: `}
+                                {thread.lastMessage.content}
+                              </p>
+                              {thread.unreadCount > 0 && (
+                                <Badge className="h-4 px-1 text-[8px] bg-primary text-primary-foreground font-bold uppercase">
+                                  {t('support.unread')}
+                                </Badge>
+                              )}
+                            </div>
                           </div>
                         </button>
                       ))
                     ) : (
-                      <div className="flex items-center justify-center h-full p-8 text-center">
-                        <p className="text-muted-foreground">{t('admin.noSupportMessages')}</p>
+                      <div className="flex flex-col items-center justify-center h-full p-8 text-center gap-2">
+                        <Inbox className="h-12 w-12 text-muted-foreground/30" />
+                        <p className="text-muted-foreground">{t('admin.noSupportMessagesInCategory')}</p>
+                        <Button 
+                          variant="link" 
+                          onClick={() => setSelectedCategoryId(null)}
+                          className="text-primary"
+                        >
+                          {t('admin.backToCategories')}
+                        </Button>
                       </div>
                     )}
                   </ScrollArea>
                 </div>
 
                 {/* Chat Area */}
-                <div className="lg:col-span-2 border rounded-lg overflow-hidden flex flex-col">
+                <div className="lg:col-span-2 border rounded-lg overflow-hidden flex flex-col bg-card/30">
                   {selectedThread ? (
                     <>
                       <div className="p-3 border-b bg-secondary/50">
@@ -518,7 +643,21 @@ const markThreadAsRead = async (thread: SupportThread) => {
                             <AvatarImage src={selectedThread.avatarUrl || ''} />
                             <AvatarFallback>{selectedThread.username?.[0]?.toUpperCase() || 'U'}</AvatarFallback>
                           </Avatar>
-                          <span className="font-medium">{selectedThread.username}</span>
+                          <div className="flex flex-col">
+                            <span className="font-medium leading-none">{selectedThread.username}</span>
+                            {selectedThread.lastMessage.category && (
+                              <div className="flex gap-2 mt-1 items-center">
+                                <Badge 
+                                  className={`${getCategoryColor(selectedThread.lastMessage.category)} text-white border-none text-[10px] h-4 px-1.5`}
+                                >
+                                  {t(`support.categories.${SUPPORT_CATEGORIES.find(c => c.id === selectedThread.lastMessage.category)?.id.replace(/_([a-z])/g, (g) => g[1].toUpperCase()) || 'generalInquiry'}`)}
+                                </Badge>
+                                <span className="text-[10px] text-muted-foreground">
+                                  {t(selectedThread.lastMessage.subcategory || '')}
+                                </span>
+                              </div>
+                            )}
+                          </div>
                         </div>
                       </div>
                       

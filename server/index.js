@@ -17,7 +17,7 @@ const io = new Server(server, {
 
 const PORT = process.env.PORT || 5000;
 
-// Store active users and their socket IDs
+// Store active users and their socket IDsnode index.js    
 const activeUsers = new Map();
 
 io.on('connection', (socket) => {
