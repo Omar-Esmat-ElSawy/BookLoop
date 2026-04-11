@@ -321,7 +321,7 @@ const performSearch = async (
                   </div>
                 )}
               </div>
-              <Select value={selectedGenre} onValueChange={handleGenreChange}>
+              <Select dir={isArabic ? 'rtl' : 'ltr'} value={selectedGenre} onValueChange={handleGenreChange}>
                 <SelectTrigger className="w-[180px]">
                   <SelectValue placeholder={t('books.allGenres')} />
                 </SelectTrigger>
@@ -334,7 +334,7 @@ const performSearch = async (
                   ))}
                 </SelectContent>
               </Select>
-              <Select value={searchType} onValueChange={handleSearchTypeChange}>
+              <Select dir={isArabic ? 'rtl' : 'ltr'} value={searchType} onValueChange={handleSearchTypeChange}>
                 <SelectTrigger className="w-[180px]">
                   <SelectValue placeholder={t('books.searchBy')} />
                 </SelectTrigger>
@@ -359,7 +359,7 @@ const performSearch = async (
                     onCheckedChange={setUseLocationFilter}
                   />
                   {useLocationFilter && (
-                    <Select value={maxDistance.toString()} onValueChange={(v) => setMaxDistance(Number(v))}>
+                    <Select dir={isArabic ? 'rtl' : 'ltr'} value={maxDistance.toString()} onValueChange={(v) => setMaxDistance(Number(v))}>
                       <SelectTrigger className="w-[100px] h-8">
                         <SelectValue />
                       </SelectTrigger>

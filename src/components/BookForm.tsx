@@ -32,6 +32,8 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { useTranslation } from 'react-i18next';
+import { validateImageFile } from '@/lib/imageValidation';
+import { toast } from 'sonner';
 
 const bookConditions = [
   'Like New',
@@ -91,6 +93,15 @@ const BookForm = ({ book, genres, onSubmit, isSubmitting }: BookFormProps) => {
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
+      // Validate image before setting preview
+      const validation = validateImageFile(file);
+      if (!validation.valid) {
+        toast.error(t('admin.invalidImageType') || validation.error);
+        // Clear input value so selecting the same invalid file again shows error
+        e.target.value = '';
+        return;
+      }
+
       setCoverImage(file);
       const reader = new FileReader();
       reader.onloadend = () => {
@@ -143,7 +154,7 @@ const BookForm = ({ book, genres, onSubmit, isSubmitting }: BookFormProps) => {
                   <Input 
                     id="cover-image" 
                     type="file" 
-                    accept="image/*"
+                    accept="image/jpeg, image/png, image/webp"
                     onChange={handleImageChange}
                     className="sr-only"
                   />

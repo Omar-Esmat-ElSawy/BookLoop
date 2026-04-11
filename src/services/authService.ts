@@ -2,6 +2,7 @@ import { toast } from 'sonner';
 import supabase from '@/lib/supabase';
 import { User } from '@/types/database.types';
 import { t } from 'i18next';
+import { validateImageFile } from '@/lib/imageValidation';
 
 export const fetchUserProfile = async (userId: string): Promise<User | null> => {
   try {
@@ -146,9 +147,13 @@ export const updateUserProfile = async (userId: string, updates: Partial<User>) 
 export const updateUserAvatar = async (userId: string, file: File): Promise<string | null> => {
   try {
     console.log("Starting avatar upload for user:", userId);
-        if (file.type !== 'image/png' && file.type !== 'image/jpeg') {
-      throw new Error('Only PNG and JPEG files are allowed');
+    
+    // Use shared validation utility
+    const validation = validateImageFile(file);
+    if (!validation.valid) {
+      throw new Error(validation.error);
     }
+
     // Create a unique file name for the avatar
     const fileExt = file.name.split('.').pop();
     const fileName = `${userId}-${Date.now()}.${fileExt}`;

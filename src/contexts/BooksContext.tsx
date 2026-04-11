@@ -3,6 +3,7 @@ import { toast } from 'sonner';
 import supabase from '@/lib/supabase';
 import { useAuth } from './AuthContext';
 import { Book, BookGenre } from '@/types/database.types';
+import { validateImageFile } from '@/lib/imageValidation';
 import { getSearchFactory } from '@/services/searchFactoryService';
 import { useTranslation } from 'react-i18next';
 interface BooksContextProps {
@@ -233,6 +234,12 @@ export const BooksProvider = ({ children }: { children: ReactNode }) => {
       
       setLoading(true);
       
+      // Backend-side validation
+      const validation = validateImageFile(coverImage);
+      if (!validation.valid) {
+        throw new Error(validation.error);
+      }
+      
       // Upload cover image
       const fileExt = coverImage.name.split('.').pop();
       const filePath = `book-covers/${Date.now()}.${fileExt}`;
@@ -304,6 +311,12 @@ export const BooksProvider = ({ children }: { children: ReactNode }) => {
       
       // Upload new cover image if provided
       if (coverImage) {
+        // Backend-side validation
+        const validation = validateImageFile(coverImage);
+        if (!validation.valid) {
+          throw new Error(validation.error);
+        }
+
         const fileExt = coverImage.name.split('.').pop();
         const filePath = `book-covers/${Date.now()}.${fileExt}`;
         

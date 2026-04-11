@@ -16,7 +16,8 @@ import { useTheme } from "@/components/theme-provider"
 
 export function ThemeToggle() {
   const { theme, setTheme } = useTheme()
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
+  const isRtl = i18n.dir() === 'rtl';
 
   const getActualTheme = () => {
     if (theme === 'system') {
@@ -28,7 +29,7 @@ export function ThemeToggle() {
   const actualTheme = getActualTheme();
 
   return (
-    <DropdownMenu>
+    <DropdownMenu dir={isRtl ? 'rtl' : 'ltr'}>
       <DropdownMenuTrigger asChild>
         <Button variant="ghost" size="icon" className={`${actualTheme === "light" ? "text-black" : "text-dark-button"}`}>
           <Sun className="h-5 w-5 rotate-0 scale-100 transition-all dark:rotate-90 dark:scale-0" />

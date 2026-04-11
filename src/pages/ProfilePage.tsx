@@ -1,5 +1,7 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
+import { Cropper, ReactCropperElement } from 'react-cropper';
+import 'cropperjs/dist/cropper.css';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { ArrowLeft, Edit, MessageSquare, Phone, MapPin } from 'lucide-react';
 import { format } from 'date-fns';
@@ -44,6 +46,12 @@ const ProfilePage = () => {
   const [newLongitude, setNewLongitude] = useState<number | null>(null);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [isUpdating, setIsUpdating] = useState(false);
+  
+  // Cropping states
+  const [cropDialogOpen, setCropDialogOpen] = useState(false);
+  const [imageToCrop, setImageToCrop] = useState<string | null>(null);
+  const [originalFile, setOriginalFile] = useState<File | null>(null);
+  const cropperRef = useRef<ReactCropperElement>(null);
 
   const isOwnProfile = user && id === user.id;
 
@@ -91,20 +99,64 @@ const ProfilePage = () => {
   const handleAvatarChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    if (file.type !== 'image/png' && file.type !== 'image/jpeg') {
-    toast.error(t('toasts.onlyPngAllowed'));
-    return;
-    }
+    
+    // Instead of uploading directly, open the crop dialog
+    const reader = new FileReader();
+    reader.onload = () => {
+      setImageToCrop(reader.result as string);
+      setOriginalFile(file);
+      setCropDialogOpen(true);
+    };
+    reader.readAsDataURL(file);
+    
+    // Reset the input value
+    e.target.value = '';
+  };
+
+  const handleCropSave = async () => {
+    if (!cropperRef.current || !originalFile) return;
+
+    const cropper = cropperRef.current?.cropper;
+    if (!cropper) return;
+
     setIsUpdating(true);
+    setCropDialogOpen(false);
+
     try {
-      const avatarUrl = await updateAvatar(file);
-      if (avatarUrl) {
-        toast.success(t('toasts.avatarUpdatedSuccess'));
-      }
+      // Get the cropped canvas
+      const canvas = cropper.getCroppedCanvas({
+        width: 400,
+        height: 400,
+      });
+
+      // Convert canvas to blob
+      canvas.toBlob(async (blob) => {
+        if (!blob) {
+          toast.error(t('toasts.errorCroppingImage'));
+          setIsUpdating(false);
+          return;
+        }
+
+        // Create a new file from the blob
+        const croppedFile = new File([blob], originalFile.name, {
+          type: originalFile.type,
+          lastModified: Date.now(),
+        });
+
+        // Upload the cropped file
+        const avatarUrl = await updateAvatar(croppedFile);
+        if (avatarUrl) {
+          toast.success(t('toasts.avatarUpdatedSuccess'));
+          // Update the profile user state to show the new avatar
+          if (profileUser) {
+            setProfileUser({ ...profileUser, avatar_url: avatarUrl });
+          }
+        }
+        setIsUpdating(false);
+      }, originalFile.type);
     } catch (error) {
       console.error('Error updating avatar:', error);
       toast.error(t('toasts.failedToUpdateAvatar'));
-    } finally {
       setIsUpdating(false);
     }
   };
@@ -212,7 +264,7 @@ const ProfilePage = () => {
                     <Input 
                       id="avatar-upload" 
                       type="file" 
-                      accept="image/png, image/jpeg"
+                      accept="image/png, image/jpeg, image/webp"
                       className="sr-only"
                       onChange={handleAvatarChange}
                       disabled={isUpdating}
@@ -346,6 +398,49 @@ const ProfilePage = () => {
           </p>
         </div>
       </footer>
+
+      {/* Cropping Dialog */}
+      <Dialog open={cropDialogOpen} onOpenChange={setCropDialogOpen}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>{t('profile.cropImage') || 'Crop Profile Picture'}</DialogTitle>
+            <DialogDescription>
+              {t('profile.cropDescription') || 'Adjust your picture to fit the square frame.'}
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="mt-4 bg-muted p-1 rounded-md overflow-hidden flex items-center justify-center min-h-[300px]">
+            {imageToCrop && (
+              <Cropper
+                src={imageToCrop}
+                style={{ height: 400, width: '100%' }}
+                initialAspectRatio={1}
+                aspectRatio={1}
+                guides={true}
+                ref={cropperRef}
+                viewMode={1}
+                dragMode="move"
+                scalable={true}
+                cropBoxMovable={true}
+                cropBoxResizable={true}
+                background={false}
+                responsive={true}
+                autoCropArea={1}
+                checkOrientation={false}
+              />
+            )}
+          </div>
+          
+          <DialogFooter className="mt-4">
+            <Button variant="outline" onClick={() => setCropDialogOpen(false)}>
+              {t('common.cancel')}
+            </Button>
+            <Button onClick={handleCropSave} disabled={isUpdating}>
+              {isUpdating ? t('common.saving') : (t('profile.saveCropped') || 'Crop & Save')}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

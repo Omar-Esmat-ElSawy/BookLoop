@@ -163,7 +163,7 @@ const NavBar = ({ }: NavBarProps) => {
               </Link>
               
               {/* User Menu */}
-              <DropdownMenu>
+              <DropdownMenu dir={isRtl ? 'rtl' : 'ltr'}>
                 <DropdownMenuTrigger asChild>
                   <Button variant="ghost" className="relative h-9 w-9 rounded-full">
                     <Avatar className="h-9 w-9">

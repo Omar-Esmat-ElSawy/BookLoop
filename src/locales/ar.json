@@ -209,7 +209,11 @@
     "userNotFoundDesc": "المستخدم الذي تبحث عنه غير موجود.",
     "booksBy": "كتب {{username}}",
     "noBooksYet": "{{name}} لم يضف أي كتب بعد",
-    "youNoBooksYet": "لم تضف أي كتب بعد"
+    "youNoBooksYet": "لم تضف أي كتب بعد",
+    "cropImage": "قص الصورة",
+    "saveCropped": "قص وحفظ",
+    "cropDescription": "قص الصورة بالحجم المطلوب",
+    "cropImageError": "حدث خطأ أثناء قص الصورة"
   },
   "subscription": {
     "title": "الاشتراك",

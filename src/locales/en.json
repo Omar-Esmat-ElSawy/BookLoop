@@ -209,8 +209,11 @@
     "userNotFoundDesc": "The user you're looking for doesn't exist.",
     "booksBy": "Books by {{username}}",
     "noBooksYet": "{{name}} hasn't added any books yet",
-    "youNoBooksYet": "You haven't added any books yet"
-
+    "youNoBooksYet": "You haven't added any books yet",
+    "cropImage": "Crop Image",
+    "saveCropped": "Crop & Save",
+    "cropDescription": "Crop your image to the desired size",
+    "cropImageError": "Error cropping image"
   },
   "subscription": {
     "title": "Subscription",
