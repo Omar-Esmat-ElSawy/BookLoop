@@ -21,7 +21,7 @@ export const useSubscription = () => {
     loading: true,
   });
 
-  const checkSubscription = useCallback(async () => {
+  const checkSubscription = useCallback(async (isBackground = false) => {
     if (!user) {
       setSubscriptionStatus({
         subscribed: false,
@@ -32,7 +32,9 @@ export const useSubscription = () => {
     }
 
     try {
-      setSubscriptionStatus(prev => ({ ...prev, loading: true }));
+      if (!isBackground) {
+        setSubscriptionStatus(prev => ({ ...prev, loading: true }));
+      }
       
       // Get session and verify it exists with a valid access token
       let { data: sessionData } = await supabase.auth.getSession();
@@ -139,8 +141,8 @@ export const useSubscription = () => {
   useEffect(() => {
     checkSubscription();
 
-    // Auto-refresh every 60 seconds
-    const interval = setInterval(checkSubscription, 60000);
+    // Auto-refresh every 60 seconds (silent background refresh)
+    const interval = setInterval(() => checkSubscription(true), 60000);
 
     return () => clearInterval(interval);
   }, [checkSubscription]);

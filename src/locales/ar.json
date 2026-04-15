@@ -42,7 +42,30 @@
     "subscription": "الاشتراك",
     "adminPanel": "لوحة الإدارة",
     "addBook": "إضافة كتاب",
-    "support": "الدعم"
+    "support": "الدعم",
+    "assistant": "المساعد الذكي"
+  },
+  "assistant": {
+    "title": "مساعد الكتب الذكي",
+    "subtitle": "مدعوم بالذكاء الاصطناعي",
+    "welcome": "مرحباً! أنا مساعدك الشخصي للكتب. كيف يمكنني مساعدتك اليوم؟",
+    "online": "متصل",
+    "thinking": "يفكر...",
+    "askPlaceholder": "اسأل عن أي كتاب...",
+    "clearChat": "مسح المحادثة",
+    "upgradeRequired": "الترقية مطلوبة",
+    "upgradeDesc": "هذه الميزة متاحة فقط للمشتركين المميزين. احصل على توصيات شخصية مدعومة بالذكاء الاصطناعي بناءً على ذوقك الفريد.",
+    "upgradeNow": "اشترك الآن",
+    "chatCleared": "تم مسح المحادثة",
+    "failedToConnect": "فشل الاتصال بالمساعد",
+    "recommendMe": "اقترح لي كتاباً",
+    "iLikeFantasy": "أنا أحب كتب الفانتازيا",
+    "showSimilar": "أرني شيئاً مشابهاً",
+    "deleteConfirmTitle": "حذف سجل المحادثة؟",
+    "deleteConfirmDesc": "هل أنت متأكد أنك تريد حذف هذه المحادثة؟ لا يمكن التراجع عن هذا الإجراء.",
+    "deleteConfirmAction": "حذف",
+    "deleteConfirmCancel": "إلغاء",
+    "startNew": "بدء محادثة جديدة"
   },
   "home": {
     "title": "بوك لوب",

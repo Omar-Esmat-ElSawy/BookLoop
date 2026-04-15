@@ -1,5 +1,5 @@
 import { Link, useLocation } from 'react-router-dom';
-import { ArrowRightLeft, BookOpen, MessageSquare, Plus, User } from 'lucide-react';
+import { ArrowRightLeft, BookOpen, MessageSquare, Plus, User, Sparkles } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/contexts/AuthContext';
 import { useTranslation } from 'react-i18next';
@@ -14,6 +14,7 @@ const BottomNav = () => {
   const navItems = [
     { to: '/books', icon: BookOpen, label: t('nav.books') },
     { to: '/messages', icon: MessageSquare, label: t('nav.messages') },
+    { to: '/book-assistant', icon: Sparkles, label: t('nav.assistant') },
     { to: '/exchange-requests', icon: ArrowRightLeft, label: t('nav.exchanges') },
     { to: `/profile/${user.id}`, icon: User, label: t('nav.profile') },
   ];

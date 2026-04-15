@@ -14,6 +14,41 @@ export type Database = {
   }
   public: {
     Tables: {
+      assistant_chat_history: {
+        Row: {
+          book_data: Json | null
+          content: string
+          created_at: string | null
+          id: string
+          role: string
+          user_id: string
+        }
+        Insert: {
+          book_data?: Json | null
+          content: string
+          created_at?: string | null
+          id?: string
+          role: string
+          user_id: string
+        }
+        Update: {
+          book_data?: Json | null
+          content?: string
+          created_at?: string | null
+          id?: string
+          role?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "assistant_chat_history_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       book_genres: {
         Row: {
           description: string | null
@@ -327,6 +362,38 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      user_preferences: {
+        Row: {
+          chat_history: Json | null
+          favorite_genres: string[] | null
+          liked_books: string[] | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          chat_history?: Json | null
+          favorite_genres?: string[] | null
+          liked_books?: string[] | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          chat_history?: Json | null
+          favorite_genres?: string[] | null
+          liked_books?: string[] | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_preferences_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       users: {
         Row: {

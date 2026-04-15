@@ -6,6 +6,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { ThemeProvider } from "@/components/theme-provider";
 import { LanguageProvider } from "@/contexts/LanguageContext";
 import BottomNav from "@/components/BottomNav";
+import { AssistantFAB } from "@/components/BookAssistant/AssistantFAB";
 
 // Pages
 import HomePage from "./pages/HomePage";
@@ -25,6 +26,7 @@ import SubscriptionPage from "./pages/SubscriptionPage";
 import SubscriptionSuccessPage from "./pages/SubscriptionSuccessPage";
 import AdminPage from "./pages/AdminPage";
 import SupportPage from "./pages/SupportPage";
+import BookAssistantPage from "./pages/BookAssistantPage";
 import NotFound from "./pages/NotFound";
 import TermsPage from "./pages/TermsPage";
 
@@ -74,6 +76,7 @@ const App = () => (
                     <Route path="/subscription-success" element={<SubscriptionSuccessPage />} />
                     <Route path="/admin" element={<AdminPage />} />
                     <Route path="/support" element={<SupportPage />} />
+                    <Route path="/book-assistant" element={<BookAssistantPage />} />
                     <Route path="/login" element={<LoginPage />} />
                     <Route path="/signup" element={<SignupPage />} />
                     <Route path="/forgot-password" element={<ForgotPasswordPage />} />
@@ -82,6 +85,7 @@ const App = () => (
                     <Route path="*" element={<NotFound />} />
                     </Routes>
                     <BottomNav />
+                    <AssistantFAB />
                   </TooltipProvider>
                 </MessagingProvider>
               </NotificationsProvider>

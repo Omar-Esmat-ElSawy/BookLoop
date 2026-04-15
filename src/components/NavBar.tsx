@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Bell, LogIn, Plus } from 'lucide-react';
+import { Bell, LogIn, Plus, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { 
   DropdownMenu,
@@ -127,6 +127,17 @@ const NavBar = ({ }: NavBarProps) => {
                   }`}
                 >
                   {t('nav.exchanges')}
+                </Link>
+                <Link 
+                  to="/book-assistant" 
+                  className={`px-4 py-2 text-sm font-medium rounded-md transition-all flex items-center gap-2 ${
+                    location.pathname === '/book-assistant' 
+                      ? 'bg-primary text-primary-foreground shadow-md' 
+                      : 'hover:bg-primary/10 hover:text-primary dark:hover:bg-primary/20 dark:hover:text-dark-button text-primary font-bold'
+                  }`}
+                >
+                  <Sparkles className="h-4 w-4" />
+                  {t('nav.assistant')}
                 </Link>
               </>
             )}
