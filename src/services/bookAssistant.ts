@@ -19,12 +19,11 @@ export const bookAssistant = {
     const preferences = await preferenceService.getPreferences(userId);
     
     // 2. Fetch all available books to provide context to AI
-    // Optimization: In a real app with 10k+ books, we'd use vector search or keyword search first.
-    // For now, let's fetch top 20 most relevant books based on existing logic.
     const { data: allBooks } = await supabase
       .from('books')
       .select('*')
-      .eq('is_available', true);
+      .eq('is_available', true)
+      .neq('owner_id', userId);
     
     const availableBooks = (allBooks as unknown as Book[]) || [];
     
@@ -36,9 +35,11 @@ export const bookAssistant = {
     });
 
     // 3. Prepare AI Context
-    const bookContext = relevantBooks.map(b => 
-      `ID: ${b.id}, Title: ${b.title}, Author: ${b.author}, Genre: ${b.genre}, Description: ${b.description}`
-    ).join('\n---\n');
+    const bookContext = relevantBooks.length > 0 
+      ? relevantBooks.map(b => 
+          `ID: ${b.id}, Title: ${b.title}, Author: ${b.author}, Genre: ${b.genre}, Description: ${b.description}`
+        ).join('\n---\n')
+      : "ATTENTION: There are currently NO books available from other users in our database. If the user confirms they want to see recommendations, you MUST politely inform them that 'No recommendations are available right now, try again later'.";
 
     const preferenceContext = preferences ? 
       `Favorite Genres: ${preferences.favorite_genres?.join(', ') || 'None'}. Liked Books: ${preferences.liked_books?.length || 0} books.` : 
