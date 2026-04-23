@@ -402,8 +402,20 @@ const performSearch = async (
     />
   )}
 
-  {searchResults.length > 0 && (
+  {searchResults.length > 0 ? (
     <BookGrid books={searchResults} />
+  ) : (
+    (searchQuery || selectedGenre) && !isSearching && (
+      <div className="flex flex-col items-center justify-center py-12 text-center">
+        <div className="bg-secondary/30 p-6 rounded-full mb-4">
+          <Search className="h-10 w-10 text-muted-foreground opacity-50" />
+        </div>
+        <h3 className="text-xl font-semibold mb-2">{t('books.noBooksFound')}</h3>
+        <p className="text-muted-foreground max-w-md">
+          {t('books.noNearbyBooks', { distance: maxDistance })}
+        </p>
+      </div>
+    )
   )}
 
   {userBooks.length > 0 && (

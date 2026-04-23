@@ -48,15 +48,15 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({ message, isRtl }) 
           <p className="text-sm whitespace-pre-wrap leading-relaxed">
             {message.content}
           </p>
+          
+          {isAssistant && message.recommendedBooks && message.recommendedBooks.length > 0 && (
+            <div className="mt-4 pt-4 border-t border-primary/10 grid gap-3">
+              {message.recommendedBooks.map(book => (
+                <BookAssistantCard key={book.id} book={book} />
+              ))}
+            </div>
+          )}
         </div>
-        
-        {isAssistant && message.recommendedBooks && message.recommendedBooks.length > 0 && (
-          <div className="mt-3 grid gap-2">
-            {message.recommendedBooks.map(book => (
-              <BookAssistantCard key={book.id} book={book} />
-            ))}
-          </div>
-        )}
         
         <span className={cn(
           "text-[10px] text-muted-foreground mt-1 px-1",

@@ -16,6 +16,9 @@ import { format } from 'date-fns';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { SUPPORT_CATEGORIES, getCategoryColor } from '@/constants/supportConstants';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { User } from '@/types/database.types';
+import { Search as SearchIcon, UserX, UserCheck } from 'lucide-react';
 
 interface SupportMessage {
   id: string;
@@ -64,6 +67,12 @@ export default function AdminPage() {
   const [isUploadingImage, setIsUploadingImage] = useState(false);
   const [selectedCategoryId, setSelectedCategoryId] = useState<string | null>(null);
   const [categoryStats, setCategoryStats] = useState<Record<string, { total: number, unread: number }>>({});
+
+  // Manage users state
+  const [userSearchText, setUserSearchText] = useState('');
+  const [foundUsers, setFoundUsers] = useState<User[]>([]);
+  const [isSearchingUsers, setIsSearchingUsers] = useState(false);
+  const [isUpdatingUser, setIsUpdatingUser] = useState<string | null>(null);
 
   // Derive selectedThread from threads array and selectedThreadId
   const selectedThread = supportThreads.find(t => t.userId === selectedThreadId) || null;
@@ -420,6 +429,54 @@ const markThreadAsRead = async (thread: SupportThread) => {
     }
   };
 
+  const handleSearchUsers = async () => {
+    if (!userSearchText.trim() || userSearchText.trim().length < 3) {
+      toast.error(t('messages.typeToSearch'));
+      return;
+    }
+
+    setIsSearchingUsers(true);
+    try {
+      const { data, error } = await supabase
+        .from('users')
+        .select('*')
+        .or(`username.ilike.%${userSearchText}%,email.ilike.%${userSearchText}%`)
+        .limit(10);
+
+      if (error) throw error;
+      setFoundUsers((data as User[]) || []);
+    } catch (error: any) {
+      console.error('Error searching users:', error);
+      toast.error(error.message || t('toasts.errorOccurred'));
+    } finally {
+      setIsSearchingUsers(false);
+    }
+  };
+
+  const toggleUserSuspension = async (userToUpdate: User) => {
+    setIsUpdatingUser(userToUpdate.id);
+    try {
+      const newStatus = !userToUpdate.is_suspended;
+      const { error } = await supabase.rpc('toggle_user_suspension' as any, {
+        target_user_id: userToUpdate.id,
+        new_status: newStatus
+      });
+
+      if (error) throw error;
+
+      setFoundUsers(prev => prev.map(u => 
+        u.id === userToUpdate.id ? { ...u, is_suspended: newStatus } : u
+      ));
+
+      toast.success(newStatus ? t('admin.suspended') : t('admin.active'));
+    } catch (error: any) {
+      console.error('Error toggling suspension:', error);
+      toast.error(error.message || t('toasts.errorOccurred'));
+    } finally {
+      setIsUpdatingUser(null);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-background pb-20 md:pb-0">
       <NavBar />
@@ -482,6 +539,90 @@ const markThreadAsRead = async (thread: SupportThread) => {
                 {t('admin.grantButton')}
               </Button>
             </form>
+          </CardContent>
+        </Card>
+
+        {/* Manage Users Card */}
+        <Card>
+          <CardHeader>
+            <div className="flex items-center gap-2">
+              <Shield className="h-6 w-6 text-primary" />
+              <CardTitle>{t('admin.manageUsers')}</CardTitle>
+            </div>
+            <CardDescription>
+              {t('admin.manageUsers')}
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="flex gap-2">
+              <div className="relative flex-1">
+                <SearchIcon className="absolute start-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                <Input
+                  placeholder={t('messages.searchUsers')}
+                  value={userSearchText}
+                  onChange={(e) => setUserSearchText(e.target.value)}
+                  className="ps-10"
+                  onKeyDown={(e) => e.key === 'Enter' && handleSearchUsers()}
+                />
+              </div>
+              <Button onClick={handleSearchUsers} disabled={isSearchingUsers}>
+                {isSearchingUsers ? <Loader2 className="h-4 w-4 animate-spin" /> : t('common.search')}
+              </Button>
+            </div>
+
+            {foundUsers.length > 0 && (
+              <div className="border rounded-md overflow-hidden">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>{t('admin.username')}</TableHead>
+                      <TableHead>{t('admin.email')}</TableHead>
+                      <TableHead>{t('admin.status')}</TableHead>
+                      <TableHead className="text-end">{t('common.viewAll')}</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {foundUsers.map((u) => (
+                      <TableRow key={u.id}>
+                        <TableCell className="font-medium">
+                          <div className="flex items-center gap-2">
+                            <Avatar className="h-6 w-6">
+                              <AvatarImage src={u.avatar_url || ''} />
+                              <AvatarFallback>{u.username?.[0]?.toUpperCase() || 'U'}</AvatarFallback>
+                            </Avatar>
+                            {u.username}
+                          </div>
+                        </TableCell>
+                        <TableCell>{u.email}</TableCell>
+                        <TableCell>
+                          <Badge variant={u.is_suspended ? "destructive" : "secondary"}>
+                            {u.is_suspended ? t('admin.suspended') : t('admin.active')}
+                          </Badge>
+                        </TableCell>
+                        <TableCell className="text-end">
+                          <Button
+                            variant={u.is_suspended ? "outline" : "destructive"}
+                            size="sm"
+                            onClick={() => toggleUserSuspension(u)}
+                            disabled={isUpdatingUser === u.id}
+                            className="h-8 gap-1"
+                          >
+                            {isUpdatingUser === u.id ? (
+                              <Loader2 className="h-3 w-3 animate-spin" />
+                            ) : u.is_suspended ? (
+                              <UserCheck className="h-3 w-3" />
+                            ) : (
+                              <UserX className="h-3 w-3" />
+                            )}
+                            {u.is_suspended ? t('admin.unsuspend') : t('admin.suspend')}
+                          </Button>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+            )}
           </CardContent>
         </Card>
 

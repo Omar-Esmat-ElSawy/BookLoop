@@ -1,6 +1,5 @@
-
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { Session } from '@supabase/supabase-js';
 import supabase from '@/lib/supabase';
 import { User } from '@/types/database.types';
@@ -16,6 +15,8 @@ import {
  import { showToast } from '@/lib/i18nToast';
  import { toast } from 'sonner';
  import { useTranslation } from 'react-i18next';
+ import { UserX, LogOut, MessageSquare } from 'lucide-react';
+ import { Button } from '@/components/ui/button';
 
  const AuthContext = createContext<AuthContextProps | undefined>(undefined);
 
@@ -25,6 +26,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
+  const location = useLocation();
 
   useEffect(() => {
     // Set up auth state listener first
@@ -159,8 +161,45 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     updateAvatar: handleUpdateAvatar
   };
 
+  const isSupportRoute = location.pathname.startsWith('/support');
+
   return (
     <AuthContext.Provider value={value}>
+      {user?.is_suspended && !isSupportRoute ? (
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-background/95 backdrop-blur-sm p-4">
+          <div className="max-w-md w-full bg-card border rounded-xl shadow-2xl p-8 text-center space-y-6">
+            <div className="mx-auto w-16 h-16 bg-destructive/10 rounded-full flex items-center justify-center">
+              <UserX className="h-10 w-10 text-destructive" />
+            </div>
+            <div className="space-y-2">
+              <h1 className="text-2xl font-bold tracking-tight">
+                {t('admin.userSuspendedTitle')}
+              </h1>
+              <p className="text-muted-foreground">
+                {t('admin.userSuspendedDesc')}
+              </p>
+            </div>
+            <div className="pt-4 flex items-center gap-3">
+              <Button 
+                variant="default" 
+                className="flex-1 flex items-center justify-center gap-2"
+                onClick={() => navigate('/support')}
+              >
+                <MessageSquare className="h-4 w-4" />
+                {t('support.title')}
+              </Button>
+              <Button 
+                variant="outline" 
+                className="flex-1 flex items-center justify-center gap-2"
+                onClick={handleSignOut}
+              >
+                <LogOut className="h-4 w-4" />
+                {t('nav.logout')}
+              </Button>
+            </div>
+          </div>
+        </div>
+      ) : null}
       {children}
     </AuthContext.Provider>
   );

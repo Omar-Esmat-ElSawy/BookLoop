@@ -13,6 +13,7 @@ export interface User {
   latitude?: number;
   longitude?: number;
   location_city?: string;
+  is_suspended?: boolean;
 }
 
 export interface Book {

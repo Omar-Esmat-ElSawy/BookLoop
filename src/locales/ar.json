@@ -115,7 +115,8 @@
     "recommendedForYou": "موصى به لك",
     "basedOnPreferences": "بناءً على تفضيلاتك في القراءة والبحث",
     "basedOnSearch": "بناءً على بحثك",
-    "noNearbyBooks": "لا توجد كتب في نطاق {{distance}} كم. عرض جميع النتائج."
+    "noNearbyBooks": "لا توجد كتب في نطاق {{distance}} كم. عرض جميع النتائج.",
+    "noBooksFound": "لم يتم العثور على كتب تطابق بحثك."
   },
   "auth": {
     "login": "تسجيل الدخول",
@@ -459,7 +460,15 @@
     "imageUploadError": "فشل في رفع الصورة",
     "viewingCategoryMessages": "عرض الرسائل في هذه الفئة",
     "noSupportMessagesInCategory": "لا توجد رسائل في هذه الفئة",
-    "backToCategories": "العودة للفئات"
+    "backToCategories": "العودة للفئات",
+    "manageUsers": "إدارة المستخدمين",
+    "suspend": "إيقاف",
+    "unsuspend": "تفعيل",
+    "suspended": "موقوف",
+    "active": "نشط",
+    "status": "الحالة",
+    "userSuspendedTitle": "الحساب موقوف",
+    "userSuspendedDesc": "لقد تم إيقاف حسابك من قبل المسؤول. يرجى الاتصال بالدعم لمزيد من المعلومات."
   },
   "support": {
     "title": "تواصل مع الدعم",

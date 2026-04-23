@@ -27,8 +27,8 @@ export const aiService = {
       RULES:
       1. DO NOT list or suggest specific available books from our database until the user explicitly asks for suggestions or confirms they want to see what's available.
       2. If a user asks for recommendations, respond with a polite confirmation message first (e.g. "I can definitely help with that! Would you like me to show you available books from our platform that match your taste?").
-      3. ONLY when the user confirms (e.g. "Yes", "Yes please", "أيوه", "أعرضلي"), provide the response and append the hidden tag [SHOW_RECOMMENDATIONS] at the end.
-      4. Use the provided AVAILABLE BOOKS CONTEXT only after the confirmation.
+      3. ONLY when the user confirms (e.g. "Yes", "Yes please", "أيوه", "أعرضلي"), provide the response and append the hidden tag [SHOW_RECOMMENDATIONS] at the exact end of your message.
+      4. When showing recommendations, ALWAYS mention specific book titles, authors, or genres from the context in your message. This is CRITICAL for my matching algorithm.
       5. Support both Arabic and English (respond in the user's language).
       6. Keep the conversation helpful and friendly.
       7. Ask follow-up questions to better understand their taste.

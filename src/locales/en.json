@@ -115,7 +115,8 @@
     "recommendedForYou": "Recommended for you",
     "basedOnPreferences": "Based on your reading preferences and search",
     "basedOnSearch": "Based on your search",
-    "noNearbyBooks": "No books found within {{distance}}km. Showing all results."
+    "noNearbyBooks": "No books found within {{distance}}km. Showing all results.",
+    "noBooksFound": "No books found matching your search."
   },
   "auth": {
     "login": "Log In",
@@ -459,7 +460,15 @@
      "imageUploadError": "Failed to upload image",
      "viewingCategoryMessages": "Viewing messages in this category",
      "noSupportMessagesInCategory": "No messages found in this category",
-     "backToCategories": "Back to Categories"
+     "backToCategories": "Back to Categories",
+     "manageUsers": "Manage Users",
+     "suspend": "Suspend",
+     "unsuspend": "Unsuspend",
+     "suspended": "Suspended",
+     "active": "Active",
+     "status": "Status",
+     "userSuspendedTitle": "Account Suspended",
+     "userSuspendedDesc": "Your account has been suspended by an administrator. Please contact support for more information."
    },
    "support": {
      "title": "Contact Support",
