@@ -4,7 +4,7 @@ export interface Message {
 }
 
 const OPENROUTER_API_URL = "https://openrouter.ai/api/v1/chat/completions";
-const DEFAULT_MODEL = "google/gemini-2.0-flash-lite-001";
+const DEFAULT_MODEL = "google/gemini-3.1-flash-lite";
 
 export const aiService = {
   async generateResponse(
@@ -54,18 +54,20 @@ export const aiService = {
           model: DEFAULT_MODEL,
           messages: [systemPrompt, ...messages],
           temperature: 0.7,
+          max_tokens: 1500,
         })
       });
 
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error?.message || "Failed to fetch from OpenRouter");
+        const errorData = await response.json().catch(() => ({}));
+        console.error("OpenRouter API Error:", response.status, errorData);
+        throw new Error(errorData.error?.message || `Failed to fetch from OpenRouter (Status: ${response.status})`);
       }
 
       const data = await response.json();
       return data.choices[0].message.content;
-    } catch (error) {
-      console.error("AI Service Error:", error);
+    } catch (error: any) {
+      console.error("AI Service Error:", error.message || error);
       return "I encountered an error while processing your request. Please try again later.";
     }
   }
