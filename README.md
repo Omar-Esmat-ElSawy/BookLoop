@@ -3,15 +3,22 @@
 🌟 Key Features
 
 📖 Book Exchange Management: List your own books, specify their condition, upload cover images, search/filter books by title, author, or genre, and make direct exchange requests.
-💬 Real-Time Messaging: Instant peer-to-peer chatting built on Socket.io to coordinate handovers and discuss details.
-🌍 Interactive Book Mapping: Search for books based on geographical location. Built with Leaflet maps to easily pinpoint local swaps.
-🛡️ Secure Database & Auth: Built-in authentication powered by Supabase with Row Level Security (RLS) policies protecting sensitive data.
-🔔 Real-Time Notifications: Automatically receive in-app alerts whenever someone requests your books or sends you a new message (backed by PostgreSQL Triggers).
-📊 Admin Dashboard & Analytics: View site statistics, active listings, user sign-ups, and engagement charts powered by Recharts.
-🤖 Smart Book Assistant: An interactive companion helping users find recommendations and navigate the application.
-🌐 Localization (i18n): Multi-language capabilities out-of-the-box (powered by `i18next` with language detection).
-🌙 Premium Styling: Sleek UI featuring custom dark mode styling, glassmorphic elements, and micro-interactions powered by Framer Motion.
 
+💬 Real-Time Messaging: Instant peer-to-peer chatting built on Socket.io to coordinate handovers and discuss details.
+
+🌍 Interactive Book Mapping: Search for books based on geographical location. Built with Leaflet maps to easily pinpoint local swaps.
+
+🛡️ Secure Database & Auth: Built-in authentication powered by Supabase with Row Level Security (RLS) policies protecting sensitive data.
+
+🔔 Real-Time Notifications: Automatically receive in-app alerts whenever someone requests your books or sends you a new message (backed by PostgreSQL Triggers).
+
+📊 Admin Dashboard & Analytics: View site statistics, active listings, user sign-ups, and engagement charts powered by Recharts.
+
+🤖 Smart Book Assistant: An interactive companion helping users find recommendations and navigate the application.
+
+🌐 Localization (i18n): Multi-language capabilities out-of-the-box (powered by `i18next` with language detection).
+
+🌙 Premium Styling: Sleek UI featuring custom dark mode styling, glassmorphic elements, and micro-interactions powered by Framer Motion.
 ---
 
 🛠️ Tech Stack
