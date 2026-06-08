@@ -1,4 +1,4 @@
-📚 BookLoop - Peer-to-Peer Book Exchange Platform
+**📚 BookLoop - Peer-to-Peer Book Exchange Platform**
 
 **🌟 Key Features**
 
