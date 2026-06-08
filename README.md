@@ -1,6 +1,6 @@
 📚 BookLoop - Peer-to-Peer Book Exchange Platform
 
-🌟 Key Features
+**🌟 Key Features**
 
 📖 Book Exchange Management: List your own books, specify their condition, upload cover images, search/filter books by title, author, or genre, and make direct exchange requests.
 
@@ -19,9 +19,9 @@
 🌐 Localization (i18n): Multi-language capabilities out-of-the-box (powered by `i18next` with language detection).
 
 🌙 Premium Styling: Sleek UI featuring custom dark mode styling, glassmorphic elements, and micro-interactions powered by Framer Motion.
----
 
-🛠️ Tech Stack
+---
+**🛠️ Tech Stack**
 
 Frontend
 Framework: React 18 & TypeScript (bootstrapped with Vite)
@@ -39,7 +39,7 @@ Real-Time Communication: Node.js Express server + Socket.io (located in `/server
 
 ---
 
-💾 Database Architecture
+**💾 Database Architecture**
 
 BookLoop uses PostgreSQL hosted on Supabase. Row-Level Security (RLS) is enabled on all tables to ensure data isolation.
 
@@ -57,7 +57,7 @@ BookLoop uses PostgreSQL hosted on Supabase. Row-Level Security (RLS) is enabled
 
 ---
 
-📂 Project Structure
+**📂 Project Structure**
 
 ```bash
 BookLoop/
@@ -81,7 +81,7 @@ BookLoop/
 
 ---
 
-🚀 Getting Started
+**🚀 Getting Started**
 
 Prerequisites
 - Node.js (v18+ recommended)
@@ -137,12 +137,12 @@ Open `http://localhost:5173` to see your running instance of BookLoop.
 
 ---
 
-🧪 Testing
+**🧪 Testing**
 Unit and integration tests are configured with Vitest.
 ```bash
 npm run test          # Run tests
 npm run coverage      # Run tests with coverage reporting
 ```
 
-📄 License
+**📄 License**
 This project is private and proprietary. All rights reserved.
