@@ -115,7 +115,7 @@
     "recommendedForYou": "موصى به لك",
     "basedOnPreferences": "بناءً على تفضيلاتك في القراءة والبحث",
     "basedOnSearch": "بناءً على بحثك",
-    "noNearbyBooks": "لا توجد كتب في نطاق {{distance}} كم. عرض جميع النتائج.",
+    "noNearbyBooks": "لا توجد كتب في نطاقك.",
     "noBooksFound": "لم يتم العثور على كتب تطابق بحثك."
   },
   "auth": {

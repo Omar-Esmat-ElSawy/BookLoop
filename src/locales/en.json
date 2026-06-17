@@ -115,7 +115,7 @@
     "recommendedForYou": "Recommended for you",
     "basedOnPreferences": "Based on your reading preferences and search",
     "basedOnSearch": "Based on your search",
-    "noNearbyBooks": "No books found within {{distance}}km. Showing all results.",
+    "noNearbyBooks": "No books found nearby.",
     "noBooksFound": "No books found matching your search."
   },
   "auth": {
